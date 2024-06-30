@@ -4,36 +4,44 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import User as UserSchema
-from database.database import get_async_session
-from database import crud
+from .schemas import UserSchema as UserSchema
+from database.database import SQLAlchemyDBHelper
+from database.crud import SQLAlchemyCRUD
 
+class UserAPIRouterWrapper:
 
-router = APIRouter(
+    __ROUTER = APIRouter(
 
-    prefix='/users',
-    tags=['User']
-)
+        prefix='/users',
+        tags=['User']
+    )
 
-@router.post('/')
-async def add_new_user(user: UserSchema, session: AsyncSession = Depends(get_async_session)):
+    @property
+    def router(self):
+        return self.__ROUTER
 
-    try:
+    @staticmethod
+    @__ROUTER.post('/')
+    async def add_user(user: UserSchema, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
-        await crud.add_new_user(session, user)
+        try:
 
-    except IntegrityError:
+            await SQLAlchemyCRUD().add_user(session, user)
 
-        raise HTTPException(404, detail='The user doesn`t exist')
+        except IntegrityError:
 
+            raise HTTPException(400, detail='The user`s name already exists')
+        
 
-@router.get('/{user_name}', response_model=UserSchema)
-async def get_user_data(user_name: str, session: AsyncSession = Depends(get_async_session)):
+    @staticmethod
+    @__ROUTER.get('/{user_name}', response_model=UserSchema)
+    async def get_user(user_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
-    try:
+        try:
 
-        return await crud.get_user(session, user_name)
+            return await SQLAlchemyCRUD().get_user(session, user_name)
     
-    except IntegrityError:
+        except IndexError:
 
-        raise HTTPException(400, detail='The user`s name already exists')
+            raise HTTPException(404, detail='The user doesn`t exist')
+        

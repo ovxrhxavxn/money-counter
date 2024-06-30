@@ -2,23 +2,32 @@ from fastapi import APIRouter
 
 from .schemas import RequestToModel, CVModel
 
-router = APIRouter(
+class CVAPIRouterWrapper:
 
-    prefix='/cv',
-    tags=['CV Model']
-)
+    __ROUTER = APIRouter(
 
-@router.post(f'/{CVModel.YOLO8S}')
-async def use_yolo8s(request: RequestToModel):
+        prefix='/cv',
+        tags=['CV Model']
+    )
 
-    pass
+    @property
+    def router(self):
+        return self.__ROUTER
 
-@router.post(f'/{CVModel.YOLO8M}')
-async def use_yolo8m(request: RequestToModel):
+    @staticmethod
+    @__ROUTER.post(f'/{CVModel.YOLO8S}')
+    async def use_yolo8s(request: RequestToModel):
 
-    pass
+        pass
+    
+    @staticmethod
+    @__ROUTER.post(f'/{CVModel.YOLO8M}')
+    async def use_yolo8m(request: RequestToModel):
 
-@router.post(f'/{CVModel.YOLO8N}')
-async def use_yolo8n(request: RequestToModel):
+        pass
 
-    pass
+    @staticmethod
+    @__ROUTER.post(f'/{CVModel.YOLO8N}')
+    async def use_yolo8n(request: RequestToModel):
+
+        pass
