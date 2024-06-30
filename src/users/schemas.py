@@ -1,13 +1,10 @@
 from pydantic import BaseModel, Field
-from enum import StrEnum
 
-class Role(StrEnum):
+from roles.schemas import RoleEnum
 
-    MANAGER = 'manager'
-    CLIENT = 'client'
 
 class User(BaseModel):
 
     name: str
-    role: Role
+    role: RoleEnum
     token_amount: int
