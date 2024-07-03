@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from enum import StrEnum
+from fastapi import File, UploadFile
 
 class CVModel(StrEnum):
 
@@ -10,4 +11,14 @@ class CVModel(StrEnum):
 class RequestToModel(BaseModel):
 
     user_name: str
-    image: bytes
+    image: str
+
+
+class TaskSchema(BaseModel):
+
+    msg_id: str | None
+    result_path: str | None
+
+class TaskId(TaskSchema): 
+
+    id: int | None

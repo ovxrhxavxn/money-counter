@@ -2,3 +2,4 @@
 .log
 *env*
 *.db
+*.rdb

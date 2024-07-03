@@ -1,15 +1,12 @@
 from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
 
-from cv_models.router import CVAPIRouterWrapper
-from users.router import UserAPIRouterWrapper
 from database.database import SQLAlchemyDBHelper
 
 
-class FastAPIWrapper:
+class FastAPIAppWrapper:
 
     def __init__(self):
-
 
         self.__app = FastAPI(
 
@@ -19,29 +16,18 @@ class FastAPIWrapper:
             version='1.0.0'
         )
 
-        self._routers: list[APIRouter] = [
-
-            CVAPIRouterWrapper().router,
-            UserAPIRouterWrapper().router
-        ]
-
     @property
     def app(self):
         return self.__app
     
-    @property
-    def routers(self):
-        return self._routers
 
-    def include_routers(self):
+    def include_routers_to_app(self, routers: list[APIRouter]):
 
-        for router in self._routers:
+        for router in routers:
             self.__app.include_router(router)
 
     @asynccontextmanager
     async def lifespan(self, app: FastAPI):
-
-        self.include_routers()
     
         await SQLAlchemyDBHelper().create_tables()
 
