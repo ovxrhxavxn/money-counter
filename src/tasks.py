@@ -7,7 +7,7 @@ from pathlib import Path
 
 from database.crud import SQLAlchemyCRUD
 from database.database import SQLAlchemyDBHelper
-from cv_models.schemas import TaskSchema, TaskId
+from cv_models.schemas import TaskSchema, TaskId, ImageHistorySchema, CVModelEnum
 from cv_models.cv_processing.model import work_with_items
 from utils import UtilsMethod
 
@@ -22,8 +22,6 @@ class TasksSet:
     @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8s(user_name: str, task_id: int, image_path: Path):
-
-        sql_crud = SQLAlchemyCRUD()
         
         # TODO: Реализация работы с моделью
 
@@ -33,19 +31,27 @@ class TasksSet:
 
         session = await async_generator.__anext__()
 
-        task: TaskId = await sql_crud.get_task_by_id(session, task_id)
+        crud = SQLAlchemyCRUD(session)
 
-        await sql_crud.update_task_result(session, task.msg_id, 'main_img')
+        task: TaskId = await crud.get_task_by_id(task_id)
 
-        await sql_crud.update_user_token_amount(session, user_name, 5)
+        await crud.update_task_result(task.msg_id, 'main_img')
+
+        await crud.update_user_token_amount(user_name, 5)
+
+        user_id = await crud.get_user_id(user_name)
+
+        await crud.add_image_history(ImageHistorySchema(
+
+            user_id=user_id,
+            task_id=task_id
+        ))
 
 
     @dramatiq.actor
     @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8m(user_name: str, task_id: int, image_path: str):
-
-        sql_crud = SQLAlchemyCRUD()
 
         utils_method = UtilsMethod()
         
@@ -59,11 +65,23 @@ class TasksSet:
 
         session = await async_generator.__anext__()
 
-        task: TaskSchema = await sql_crud.get_task_by_id(session, task_id)
+        crud = SQLAlchemyCRUD(session)
 
-        await sql_crud.update_task_result(session, task.msg_id, str(Path(f'database\\images\\processed\\{task_id}Result.jpeg')))
+        task: TaskId = await crud.get_task_by_id(task_id)
 
-        await sql_crud.update_user_token_amount(session, user_name, 10)
+        await crud.update_task_result(task.msg_id, str(Path(f'database\\images\\processed\\{task_id}Result.jpeg')))
+
+        cv_model = await crud.get_cv_model(CVModelEnum.YOLO8M)
+
+        await crud.update_user_token_amount(user_name, cv_model.cost)
+
+        user_id = await crud.get_user_id(user_name)
+
+        await crud.add_image_history(ImageHistorySchema(
+
+            user_id=user_id,
+            task_id=task_id
+        ))
 
 
     @dramatiq.actor

@@ -26,7 +26,7 @@ class UserAPI:
 
         try:
 
-            await SQLAlchemyCRUD().add_user(session, user)
+            await SQLAlchemyCRUD(session).add_user(user)
 
         except IntegrityError:
 
@@ -39,7 +39,7 @@ class UserAPI:
 
         try:
 
-            return await SQLAlchemyCRUD().get_user(session, user_name)
+            return await SQLAlchemyCRUD(session).get_user(user_name)
     
         except IndexError:
 

@@ -1,7 +1,12 @@
+import os
+
 from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from database.database import SQLAlchemyDBHelper
+from database.crud import SQLAlchemyCRUD
+from cv_models.schemas import CVModelEnum, CVModelSchema
 
 
 class FastAPIAppWrapper:
@@ -26,9 +31,25 @@ class FastAPIAppWrapper:
         for router in routers:
             self.__app.include_router(router)
 
+
+    async def __create_and_fill_tables(self):
+    
+        if not os.path.exists(Path('database\\app.db')):
+
+            db_helper = SQLAlchemyDBHelper()
+
+            await db_helper.create_tables()
+
+            async_generator = db_helper.get_async_session()
+
+            session = await async_generator.__anext__()
+
+            await SQLAlchemyCRUD(session).fill_cv_model_table()
+
+
     @asynccontextmanager
     async def lifespan(self, app: FastAPI):
-    
-        await SQLAlchemyDBHelper().create_tables()
+
+        await self.__create_and_fill_tables()
 
         yield
