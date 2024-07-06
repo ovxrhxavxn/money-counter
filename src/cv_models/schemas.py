@@ -1,6 +1,7 @@
 from pydantic import BaseModel
+from sqlalchemy.types import Date
 from enum import StrEnum
-from fastapi import File, UploadFile
+
 
 class CVModelEnum(StrEnum):
 
@@ -34,4 +35,3 @@ class ImageHistorySchema(BaseModel):
 
     user_id: int
     task_id: int
-

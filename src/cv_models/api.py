@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.exceptions import HTTPException
 from pathlib import Path
 
-from .schemas import CVModelEnum, TaskSchema
+from .schemas import CVModelEnum, TaskSchema, CVModelSchema
 from tasks import TasksSet
 from database.database import SQLAlchemyDBHelper
 from database.crud import SQLAlchemyCRUD
@@ -147,7 +147,34 @@ class CVAPI:
 
         if task.result_path is None:
         
-            raise HTTPException(102, detail='The task is in processing')
+            raise HTTPException(202, detail='The task is in processing')
         
 
         return FileResponse(Path(task.result_path).resolve())
+    
+
+    @staticmethod
+    @__ROUTER.get('/{cv_model_name}', response_model=CVModelSchema)
+    async def get_cv_model(session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        try:
+
+            return SQLAlchemyCRUD(session).get_cv_model()
+        
+        except IndexError:
+
+            raise HTTPException(404, detail='The model doesn`t exist')
+        
+
+    @staticmethod
+    @__ROUTER.patch('/{model_name}')
+    async def change_model_cost(model_name: str, new_cost: int, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        await SQLAlchemyCRUD(session).change_cv_model_cost(model_name, new_cost)
+        
+
+    @staticmethod
+    @__ROUTER.get('/tasks/{user_name}')
+    async def get_user_tasks_history(user_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        pass

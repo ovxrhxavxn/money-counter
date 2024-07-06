@@ -101,6 +101,7 @@ class SQLAlchemyCRUD:
 
         return task
     
+    
     async def update_task_result(self, msg_id: str, new_result: str):
 
         stmt = update(Task).where(Task.msg_id == msg_id).values(result_path=new_result)
@@ -195,6 +196,14 @@ class SQLAlchemyCRUD:
         model_from_db = result.all()[0].t[0]
 
         return model_from_db.id
+    
+
+    async def change_cv_model_cost(self, model_name: str, new_cost: int):
+
+        stmt = update(CVModel).where(CVModel.name == model_name).values(cost = new_cost)
+
+        await self._db_session.execute(stmt)
+        await self._db_session.commit()
     
 
     async def fill_cv_model_table(self):
