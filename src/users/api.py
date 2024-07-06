@@ -45,3 +45,19 @@ class UserAPI:
 
             raise HTTPException(404, detail='The user doesn`t exist')
         
+
+    @staticmethod
+    @__ROUTER.post('/{user_name}')
+    async def change_user_token_amount(user_name: str, token_amount: int, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        try:
+
+            await SQLAlchemyCRUD(session).get_user(user_name)
+    
+        except IndexError:
+
+            raise HTTPException(404, detail='The user doesn`t exist')
+        
+        else:
+            
+            await SQLAlchemyCRUD(session).change_user_token_amount(user_name, token_amount)

@@ -38,7 +38,7 @@ class SQLAlchemyCRUD:
         return user
     
     
-    async def update_user_token_amount(self, user_name: str, cost: int):
+    async def subtract_from_user_token_amount(self, user_name: str, cost: int):
 
         user = await self.get_user(user_name)
 
@@ -46,6 +46,15 @@ class SQLAlchemyCRUD:
 
         await self._db_session.execute(stmt)
         await self._db_session.commit()
+
+
+    async def change_user_token_amount(self, user_name: str, new_value: int):
+
+        stmt = update(UserModel).where(UserModel.name == user_name).values(token_amount = new_value) 
+
+        await self._db_session.execute(stmt)
+        await self._db_session.commit()
+
 
     
     async def add_task(self, task: TaskSchema):
@@ -150,6 +159,7 @@ class SQLAlchemyCRUD:
         user_from_db = result.all()[0].t[0]
 
         return user_from_db.id
+    
     
     async def add_cv_model(self, cv_model: CVModelSchema):
 

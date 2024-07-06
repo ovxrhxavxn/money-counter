@@ -1,8 +1,10 @@
 import dramatiq
-
 import dramatiq.asyncio
+
 from dramatiq.brokers.redis import RedisBroker
 from dramatiq.middleware.asyncio import AsyncIO
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 from pathlib import Path
 
 from database.crud import SQLAlchemyCRUD
@@ -37,7 +39,7 @@ class TasksSet:
 
         await crud.update_task_result(task.msg_id, 'main_img')
 
-        await crud.update_user_token_amount(user_name, 5)
+        await crud.subtract_from_user_token_amount(user_name, 5)
 
         user_id = await crud.get_user_id(user_name)
 
@@ -73,7 +75,7 @@ class TasksSet:
 
         cv_model = await crud.get_cv_model(CVModelEnum.YOLO8M)
 
-        await crud.update_user_token_amount(user_name, cv_model.cost)
+        await crud.subtract_from_user_token_amount(user_name, cv_model.cost)
 
         user_id = await crud.get_user_id(user_name)
 
@@ -88,7 +90,7 @@ class TasksSet:
     @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8n(user_name: str, task_id: int, image: bytes):
-        
+
         # TODO: Реализация работы с моделью
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
@@ -99,4 +101,4 @@ class TasksSet:
 
         await SQLAlchemyCRUD().update_task_result(session, task.msg_id, 'new result from y8n')
 
-        await SQLAlchemyCRUD().update_user_token_amount(session, user_name, 15)
+        await SQLAlchemyCRUD().subtract_from_user_token_amount(session, user_name, 15)

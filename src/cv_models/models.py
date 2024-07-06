@@ -21,7 +21,7 @@ class ImageHistory(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
     task_id = Column(String, ForeignKey('tasks.id'))
-    date = Column(Date, nullable=False, default=dt.now(UTC))
+    date = Column(Date, nullable=False, default=dt.now(UTC).date())
 
 
 class Task(Base):
