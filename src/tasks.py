@@ -8,7 +8,7 @@ from pathlib import Path
 from database.crud import SQLAlchemyCRUD
 from database.database import SQLAlchemyDBHelper
 from cv_models.schemas import TaskId, ImageHistorySchema, CVModelEnum
-from cv_models.cv_processing.YOLO8Model import Model
+from cv_models.cv_processing.YOLO8Model import CVModel
 from utils import UtilsMethod
 
 
@@ -29,7 +29,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
+        sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 
@@ -67,7 +67,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
+        sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 
@@ -105,7 +105,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
+        sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 

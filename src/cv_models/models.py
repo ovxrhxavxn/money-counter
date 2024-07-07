@@ -5,7 +5,7 @@ from datetime import UTC
 from database.database import Base
 
 
-class CVModel(Base):
+class CVModelTable(Base):
 
     __tablename__ = 'cv_models'
 

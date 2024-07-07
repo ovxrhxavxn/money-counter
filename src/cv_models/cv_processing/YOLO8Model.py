@@ -14,7 +14,7 @@ from pathlib import Path
 # rf = Roboflow(api_key="z1B73yP5LSQJhcOeuKL9")
 # project = rf.workspace().project("detect-money")
 # model = project.version(2).model
-class Model:
+class CVModel:
 
     model_detector_M = ort.InferenceSession(Path('cv_models\\cv_processing\\NewDetector.onnx').resolve())
     model_detector_N = ort.InferenceSession(Path('cv_models\\cv_processing\\DetectN.onnx').resolve())
@@ -77,22 +77,22 @@ class Model:
     }
 
     @staticmethod
-    def classify_item(item_path: str):
-        result = Model.model_classifier(item_path)
+    def __classify_item(item_path: str):
+        result = CVModel.model_classifier(item_path)
         probs = result[0].probs  # Class probabilities for classification outputs
-        money_class = Model.__yolo_classes[probs.top1]
+        money_class = CVModel.__yolo_classes[probs.top1]
         probability = probs.top1conf.item()
         return money_class, probability
 
     @staticmethod
-    def detect_objects_on_image(buf, num: int):
+    def __detect_objects_on_image(buf: bytes, num: int):
 
-        input, img_width, img_height = Model.prepare_input(buf)
-        output = Model.run_model(input, num)
-        return Model.process_output(output,img_width,img_height)
+        input, img_width, img_height = CVModel.__prepare_input(buf)
+        output = CVModel.__run_model(input, num)
+        return CVModel.__process_output(output,img_width,img_height)
 
     @staticmethod
-    def prepare_input(buf):
+    def __prepare_input(buf: bytes):
         img = Image.open(io.BytesIO(buf))
         img_width, img_height = img.size
         img = img.resize((640, 640))
@@ -103,30 +103,30 @@ class Model:
         return input.astype(np.float32), img_width, img_height
 
     @staticmethod
-    def run_model(input, num: int):
+    def __run_model(input, num: int):
         # Это модель детекции
         if(num == 1):
-            outputs = Model.model_detector_M.run(["output0"], {"images":input})
+            outputs = CVModel.model_detector_M.run(["output0"], {"images":input})
         elif(num == 2):
-            outputs = Model.model_detector_N.run(["output0"], {"images": input})
+            outputs = CVModel.model_detector_N.run(["output0"], {"images": input})
         else:
-            outputs = Model.model_detector_S.run(["output0"], {"images": input})
+            outputs = CVModel.model_detector_S.run(["output0"], {"images": input})
         return outputs[0]
 
     @staticmethod
-    def iou(box1,box2):
-        return Model.intersection(box1,box2)/Model.union(box1,box2)
+    def __iou(box1,box2):
+        return CVModel.__intersection(box1,box2)/CVModel.__union(box1,box2)
 
     @staticmethod
-    def union(box1,box2):
+    def __union(box1,box2):
         box1_x1,box1_y1,box1_x2,box1_y2 = box1[:4]
         box2_x1,box2_y1,box2_x2,box2_y2 = box2[:4]
         box1_area = (box1_x2-box1_x1)*(box1_y2-box1_y1)
         box2_area = (box2_x2-box2_x1)*(box2_y2-box2_y1)
-        return box1_area + box2_area - Model.intersection(box1,box2)
+        return box1_area + box2_area - CVModel.__intersection(box1,box2)
 
     @staticmethod
-    def intersection(box1,box2):
+    def __intersection(box1,box2):
         box1_x1,box1_y1,box1_x2,box1_y2 = box1[:4]
         box2_x1,box2_y1,box2_x2,box2_y2 = box2[:4]
         x1 = max(box1_x1,box2_x1)
@@ -136,7 +136,7 @@ class Model:
         return (x2-x1)*(y2-y1)
 
     @staticmethod
-    def process_output(output, img_width, img_height):
+    def __process_output(output, img_width, img_height):
         output = output[0].astype(float)
         output = output.transpose()
 
@@ -146,7 +146,7 @@ class Model:
             if prob < 0.5:
                 continue
             class_id = row[4:].argmax()
-            label = Model.__yolo_classes[class_id]
+            label = CVModel.__yolo_classes[class_id]
             xc, yc, w, h = row[:4]
             x1 = (xc - w/2) / 640 * img_width
             y1 = (yc - h/2) / 640 * img_height
@@ -158,11 +158,11 @@ class Model:
         result = []
         while len(boxes) > 0:
             result.append(boxes[0])
-            boxes = [box for box in boxes if Model.iou(box, boxes[0]) < 0.7]
+            boxes = [box for box in boxes if CVModel.__iou(box, boxes[0]) < 0.7]
         return result
 
     @staticmethod
-    def work_with_items(task_id: int, img: bytes, coordinates_list: list): # drawing and classifiyng
+    def __work_with_items(task_id: int, img: bytes, coordinates_list: list): # drawing and classifiyng
 
         image = Image.open(io.BytesIO(img))
         font = ImageFont.truetype(Path(f'cv_models\\cv_processing\\Karla-VariableFont_wght.ttf').resolve(), 60)
@@ -183,8 +183,8 @@ class Model:
             img_byte= io.BytesIO()
             cropped.save(img_byte, format="JPEG")
             img_byte_array.append(img_byte.getvalue())
-            money_class, prob = Model.classify_item(item_path)
-            sum += Model.__yolo_classes_sum[money_class]
+            money_class, prob = CVModel.__classify_item(item_path)
+            sum += CVModel.__yolo_classes_sum[money_class]
 
             text = f"{money_class}\n{round(prob, 3)}"
             draw.rectangle((x, y, width, height), outline=(255, 0, 0), width=5)
@@ -204,20 +204,20 @@ class Model:
 
     @staticmethod
     def Yolo8M_Work(task_id: int, img: bytes):
-        coordinates_list = Model.detect_objects_on_image(img, 1)
-        message_sum, img_byte_main, img_byte_array = Model.work_with_items(task_id, img, coordinates_list)
+        coordinates_list = CVModel.__detect_objects_on_image(img, 1)
+        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
         return message_sum, img_byte_main, img_byte_array
 
     @staticmethod
     def Yolo8N_Work(task_id: int, img: bytes):
-        coordinates_list = Model.detect_objects_on_image(img, 2)
-        message_sum, img_byte_main, img_byte_array = Model.work_with_items(task_id, img, coordinates_list)
+        coordinates_list = CVModel.__detect_objects_on_image(img, 2)
+        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
         return message_sum, img_byte_main, img_byte_array
 
     @staticmethod
     def Yolo8S_Work(task_id: int, img: bytes):
-        coordinates_list = Model.detect_objects_on_image(img, 3)
-        message_sum, img_byte_main, img_byte_array = Model.work_with_items(task_id, img, coordinates_list)
+        coordinates_list = CVModel.__detect_objects_on_image(img, 3)
+        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
         return message_sum, img_byte_main, img_byte_array
 
 # Тестовый код. Конвертирует картинку в байтовый формат для передачи в метод

@@ -47,7 +47,7 @@ class UserAPI:
         
 
     @staticmethod
-    @__ROUTER.post('/{user_name}/tokens')
+    @__ROUTER.patch('/{user_name}/tokens')
     async def change_user_token_amount(user_name: str, token_amount: int, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         try:
@@ -61,3 +61,10 @@ class UserAPI:
         else:
             
             await SQLAlchemyCRUD(session).change_user_token_amount(user_name, token_amount)
+
+    
+    @staticmethod
+    @__ROUTER.patch('/{user_name}/role')
+    async def change_user_role(user_name: str, new_role: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        await SQLAlchemyCRUD(session).change_user_role(user_name, new_role)

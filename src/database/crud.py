@@ -3,7 +3,7 @@ from sqlalchemy import select, insert, update, delete
 
 from users.models import User as UserModel
 from users.schemas import UserSchema
-from cv_models.models import Task, ImageHistory, CVModel
+from cv_models.models import Task, ImageHistory, CVModelTable
 from cv_models.schemas import TaskSchema, TaskId, ImageHistorySchema, CVModelSchema, CVModelEnum
 
 class SQLAlchemyCRUD:
@@ -55,6 +55,13 @@ class SQLAlchemyCRUD:
         await self._db_session.execute(stmt)
         await self._db_session.commit()
 
+
+    async def change_user_role(self, user_name: str, new_role: str):
+
+        stmt = update(UserModel).where(UserModel.name == user_name).values(role = new_role) 
+
+        await self._db_session.execute(stmt)
+        await self._db_session.commit()
 
     
     async def add_task(self, task: TaskSchema):
@@ -175,7 +182,7 @@ class SQLAlchemyCRUD:
     
     async def add_cv_model(self, cv_model: CVModelSchema):
 
-        stmt = insert(CVModel).values(**cv_model.model_dump())
+        stmt = insert(CVModelTable).values(**cv_model.model_dump())
 
         await self._db_session.execute(stmt)
         await self._db_session.commit()
@@ -183,7 +190,7 @@ class SQLAlchemyCRUD:
     
     async def get_cv_model(self, model_name: str):
 
-        query = select(CVModel).where(CVModel.name == model_name)
+        query = select(CVModelTable).where(CVModelTable.name == model_name)
 
         result = await self._db_session.execute(query)
 
@@ -200,7 +207,7 @@ class SQLAlchemyCRUD:
     
     async def get_cv_model_id(self, model_name: str):
 
-        query = select(CVModel).where(CVModel.name == model_name)
+        query = select(CVModelTable).where(CVModelTable.name == model_name)
 
         result = await self._db_session.execute(query)
 
@@ -211,7 +218,7 @@ class SQLAlchemyCRUD:
 
     async def change_cv_model_cost(self, model_name: str, new_cost: int):
 
-        stmt = update(CVModel).where(CVModel.name == model_name).values(cost = new_cost)
+        stmt = update(CVModelTable).where(CVModelTable.name == model_name).values(cost = new_cost)
 
         await self._db_session.execute(stmt)
         await self._db_session.commit()
@@ -224,5 +231,5 @@ class SQLAlchemyCRUD:
                 await self.add_cv_model(CVModelSchema(
 
                     name=model,
-                    cost=(1+i)*5
+                    cost=(2+i)*5
                 ))
