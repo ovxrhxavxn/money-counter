@@ -19,7 +19,7 @@ class CVModel:
     model_detector_M = ort.InferenceSession(Path('cv_models\\cv_processing\\NewDetector.onnx').resolve())
     model_detector_N = ort.InferenceSession(Path('cv_models\\cv_processing\\DetectN.onnx').resolve())
     model_detector_S = ort.InferenceSession(Path('cv_models\\cv_processing\\DetectorS.onnx').resolve())
-    model_classifier = YOLO(Path('cv_models\\cv_processing\\best_classifier.pt').resolve())
+    model_classifier = YOLO(Path('cv_models\\cv_processing\\classifier.pt').resolve())
 
     __yolo_classes = [
         "1000rub_note",

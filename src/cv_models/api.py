@@ -201,7 +201,4 @@ class CVAPI:
                 base64.b64encode(UtilsMethod().read_image(Path(path).resolve())).decode()
             )
 
-        return JSONResponse(content={
-
-            user_name : base64_images
-        })
+        return JSONResponse(content=base64_images)
