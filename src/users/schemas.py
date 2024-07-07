@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from datetime import date
 
 from roles.schemas import Role
 
@@ -13,3 +14,8 @@ class UserSchema(BaseModel):
 class UserId(UserSchema):
 
     id: int
+
+
+class UserDate(UserSchema):
+
+    registration_date: date

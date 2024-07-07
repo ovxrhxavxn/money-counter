@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, insert, update, delete
 
 from users.models import User as UserModel
-from users.schemas import UserSchema
+from users.schemas import UserSchema, UserDate
 from cv_models.models import Task, ImageHistory, CVModelTable
 from cv_models.schemas import TaskSchema, TaskId, ImageHistorySchema, CVModelSchema, CVModelEnum
 
@@ -37,7 +37,35 @@ class SQLAlchemyCRUD:
 
         return user
     
+
+    async def get_all_users(self) -> list[UserSchema]:
+
+        users = []
+
+        users_query = select(UserModel)
+
+        users_result = await self._db_session.execute(users_query)
+
+        users_from_db = users_result.all()
+
+        for i, row in enumerate(users_from_db):
+
+            for j, user in enumerate(row.t):
+
+                users.append(
+
+                    UserDate(
+
+                        name=user.name,
+                        role=user.role,
+                        token_amount=user.token_amount,
+                        registration_date=user.registration_date
+                    )
+                )
+
+        return users
     
+
     async def subtract_from_user_token_amount(self, user_name: str, cost: int):
 
         user = await self.get_user(user_name)

@@ -4,7 +4,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserSchema as UserSchema
+from .schemas import UserSchema, UserDate
 from database.database import SQLAlchemyDBHelper
 from database.crud import SQLAlchemyCRUD
 
@@ -44,6 +44,13 @@ class UserAPI:
         except IndexError:
 
             raise HTTPException(404, detail='The user doesn`t exist')
+        
+
+    @staticmethod
+    @__ROUTER.get('/', response_model=list[UserDate])
+    async def get_all_users(session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+
+        return await SQLAlchemyCRUD(session).get_all_users()
         
 
     @staticmethod
