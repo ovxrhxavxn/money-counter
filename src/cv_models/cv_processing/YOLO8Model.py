@@ -112,7 +112,7 @@ class CVModel:
     def __classify_item(item_path: str):
         result = CVModel.model_classifier(item_path)
         probs = result[0].probs  # Class probabilities for classification outputs
-        money_class = CVModel.__yolo_classes[probs.top1]
+        money_class = result[0].names[probs.top1]
         probability = probs.top1conf.item()
         return money_class, probability
 
