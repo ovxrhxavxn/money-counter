@@ -47,7 +47,7 @@ class UserAPI:
         
 
     @staticmethod
-    @__ROUTER.post('/{user_name}')
+    @__ROUTER.post('/{user_name}/tokens')
     async def change_user_token_amount(user_name: str, token_amount: int, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         try:

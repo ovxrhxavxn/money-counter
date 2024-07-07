@@ -24,7 +24,7 @@ class CVAPI:
         return self.__ROUTER
 
     @staticmethod
-    @__ROUTER.post(f'/{CVModelEnum.YOLO8S}', status_code=202)
+    @__ROUTER.post(f'/models/{CVModelEnum.YOLO8S}', status_code=202)
     async def use_yolo8s(user_name: str, image: UploadFile, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         crud = SQLAlchemyCRUD(session)
@@ -63,7 +63,7 @@ class CVAPI:
         
 
     @staticmethod
-    @__ROUTER.post(f'/{CVModelEnum.YOLO8M}', status_code=202)
+    @__ROUTER.post(f'/models/{CVModelEnum.YOLO8M}', status_code=202)
     async def use_yolo8m(user_name: str, image: UploadFile, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         crud = SQLAlchemyCRUD(session)
@@ -102,7 +102,7 @@ class CVAPI:
 
 
     @staticmethod
-    @__ROUTER.post(f'/{CVModelEnum.YOLO8N}', status_code=202)
+    @__ROUTER.post(f'/models/{CVModelEnum.YOLO8N}', status_code=202)
     async def use_yolo8n(user_name: str, image: UploadFile, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         crud = SQLAlchemyCRUD(session)
@@ -140,7 +140,7 @@ class CVAPI:
             return {'task_id' : msg.message_id}
 
     @staticmethod
-    @__ROUTER.get('/tasks/{task_id}')
+    @__ROUTER.get('/models/tasks/{task_id}')
     async def get_task_result(task_id: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         task = await SQLAlchemyCRUD(session).get_task_by_msg_id(task_id)
@@ -154,12 +154,12 @@ class CVAPI:
     
 
     @staticmethod
-    @__ROUTER.get('/{cv_model_name}', response_model=CVModelSchema)
-    async def get_cv_model(session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+    @__ROUTER.get('/models/{model_name}', response_model=CVModelSchema)
+    async def get_model(model_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         try:
 
-            return SQLAlchemyCRUD(session).get_cv_model()
+            return SQLAlchemyCRUD(session).get_cv_model(model_name)
         
         except IndexError:
 
@@ -167,14 +167,14 @@ class CVAPI:
         
 
     @staticmethod
-    @__ROUTER.patch('/{model_name}')
+    @__ROUTER.patch('/models/{model_name}/cost')
     async def change_model_cost(model_name: str, new_cost: int, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         await SQLAlchemyCRUD(session).change_cv_model_cost(model_name, new_cost)
         
 
     @staticmethod
-    @__ROUTER.get('/tasks/{user_name}')
+    @__ROUTER.get('/models/tasks/{user_name}')
     async def get_user_tasks_history(user_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         pass
