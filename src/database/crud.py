@@ -78,7 +78,8 @@ class SQLAlchemyCRUD:
             id=task_from_db.id,
             cv_model_id=task_from_db.cv_model_id,
             msg_id=task_from_db.msg_id,
-            result_path=task_from_db.result_path
+            result_path=task_from_db.result_path,
+            result_sum=task_from_db.result_sum
         )
 
         return task
@@ -96,7 +97,8 @@ class SQLAlchemyCRUD:
             id=task_from_db.id,
             cv_model_id=task_from_db.cv_model_id,
             msg_id=task_from_db.msg_id,
-            result_path=task_from_db.result_path
+            result_path=task_from_db.result_path,
+            result_sum=task_from_db.result_sum
         )
 
         return task
@@ -123,7 +125,8 @@ class SQLAlchemyCRUD:
             id=task_from_db.id,
             cv_model_id=task_from_db.cv_model_id,
             msg_id=task_from_db.msg_id,
-            result_path=task_from_db.result_path
+            result_path=task_from_db.result_path,
+            result_sum=task_from_db.result_sum
         )
 
         return task

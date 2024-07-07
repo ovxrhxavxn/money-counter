@@ -152,7 +152,7 @@ class CVAPI:
             raise HTTPException(202, detail='The task is in processing')
         
 
-        img_bytes = UtilsMethod.read_image(Path(task.result_path).resolve())
+        img_bytes = UtilsMethod().read_image(Path(task.result_path).resolve())
 
         encoded_string = base64.b64encode(img_bytes).decode()
         
