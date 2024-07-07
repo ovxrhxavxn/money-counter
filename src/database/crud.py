@@ -136,6 +136,14 @@ class SQLAlchemyCRUD:
         await self._db_session.commit()
 
     
+    async def update_task_result_sum(self, task_id: int, new_sum: int):
+
+        stmt = update(Task).where(Task.id == task_id).values(result_sum = new_sum)
+
+        await self._db_session.execute(stmt)
+        await self._db_session.commit()
+
+    
     async def delete_task(self, task_id: int):
 
         stmt = delete(Task).where(Task.id == task_id)

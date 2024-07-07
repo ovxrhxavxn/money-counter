@@ -25,6 +25,7 @@ class TaskSchema(BaseModel):
     cv_model_id: int
     msg_id: str | None
     result_path: str | None
+    result_sum: int | None
 
 class TaskId(TaskSchema): 
 
@@ -35,3 +36,9 @@ class ImageHistorySchema(BaseModel):
 
     user_id: int
     task_id: int
+
+
+class TaskResult(BaseModel):
+
+    image: str
+    total: int

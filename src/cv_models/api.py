@@ -1,10 +1,12 @@
+import base64
+
 from fastapi import APIRouter, Depends, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.exceptions import HTTPException
 from pathlib import Path
 
-from .schemas import CVModelEnum, TaskSchema, CVModelSchema
+from .schemas import CVModelEnum, TaskSchema, CVModelSchema, TaskResult
 from tasks import TasksSet
 from database.database import SQLAlchemyDBHelper
 from database.crud import SQLAlchemyCRUD
@@ -31,7 +33,7 @@ class CVAPI:
 
         cv_model_id = await crud.get_cv_model_id(CVModelEnum.YOLO8S)
 
-        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None))
+        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None, result_sum=None))
 
         last_task = await crud.get_last_task()
 
@@ -70,7 +72,7 @@ class CVAPI:
 
         cv_model_id = await crud.get_cv_model_id(CVModelEnum.YOLO8M)
 
-        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None))
+        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None, result_sum=None))
 
         last_task = await crud.get_last_task()
 
@@ -109,7 +111,7 @@ class CVAPI:
 
         cv_model_id = await crud.get_cv_model_id(CVModelEnum.YOLO8M)
 
-        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None))
+        await crud.add_task(TaskSchema(cv_model_id=cv_model_id,result_path=None, msg_id=None, result_sum=None))
 
         last_task = await crud.get_last_task()
 
@@ -140,7 +142,7 @@ class CVAPI:
             return {'task_id' : msg.message_id}
 
     @staticmethod
-    @__ROUTER.get('/models/tasks/{task_id}')
+    @__ROUTER.get('/models/tasks/{task_id}', response_model=TaskResult)
     async def get_task_result(task_id: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
         task = await SQLAlchemyCRUD(session).get_task_by_msg_id(task_id)
@@ -150,7 +152,16 @@ class CVAPI:
             raise HTTPException(202, detail='The task is in processing')
         
 
-        return FileResponse(Path(task.result_path).resolve())
+        img_bytes = UtilsMethod.read_image(Path(task.result_path).resolve())
+
+        encoded_string = base64.b64encode(img_bytes).decode()
+        
+
+        return JSONResponse(content={
+
+            'image' : encoded_string,
+            'total' : task.result_sum
+        })
     
 
     @staticmethod
@@ -159,7 +170,7 @@ class CVAPI:
 
         try:
 
-            return SQLAlchemyCRUD(session).get_cv_model(model_name)
+            return await SQLAlchemyCRUD(session).get_cv_model(model_name)
         
         except IndexError:
 

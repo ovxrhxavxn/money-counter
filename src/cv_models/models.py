@@ -32,3 +32,4 @@ class Task(Base):
     cv_model_id = Column(Integer, ForeignKey('cv_models.id'))
     msg_id = Column(String, nullable=True, unique=True)
     result_path = Column(String, nullable=True)
+    result_sum = Column(Integer, nullable=True)

@@ -29,7 +29,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        Model.Yolo8S_Work(task_id, image_bytes)
+        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 
@@ -40,6 +40,8 @@ class TasksSet:
         task: TaskId = await crud.get_task_by_id(task_id)
 
         await crud.update_task_result(task.msg_id, str(Path(f'database\\images\\processed\\{task_id}Result.jpeg')))
+
+        await crud.update_task_result_sum(task_id, sum)
 
         cv_model = await crud.get_cv_model(CVModelEnum.YOLO8M)
 
@@ -65,7 +67,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        Model.Yolo8M_Work(task_id, image_bytes)
+        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 
@@ -76,6 +78,8 @@ class TasksSet:
         task: TaskId = await crud.get_task_by_id(task_id)
 
         await crud.update_task_result(task.msg_id, str(Path(f'database\\images\\processed\\{task_id}Result.jpeg')))
+
+        await crud.update_task_result_sum(task_id, sum)
 
         cv_model = await crud.get_cv_model(CVModelEnum.YOLO8M)
 
@@ -101,7 +105,7 @@ class TasksSet:
 
         image_bytes = utils_method.read_image(image_path)
 
-        Model.Yolo8N_Work(task_id, image_bytes)
+        sum, _, _ = Model.Yolo8N_Work(task_id, image_bytes)
 
         async_generator = SQLAlchemyDBHelper().get_async_session()
 
@@ -112,6 +116,8 @@ class TasksSet:
         task: TaskId = await crud.get_task_by_id(task_id)
 
         await crud.update_task_result(task.msg_id, str(Path(f'database\\images\\processed\\{task_id}Result.jpeg')))
+
+        await crud.update_task_result_sum(task_id, sum)
 
         cv_model = await crud.get_cv_model(CVModelEnum.YOLO8M)
 
