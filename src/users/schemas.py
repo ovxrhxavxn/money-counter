@@ -8,3 +8,8 @@ class UserSchema(BaseModel):
     name: str
     role: Role
     token_amount: int
+
+
+class UserId(UserSchema):
+
+    id: int

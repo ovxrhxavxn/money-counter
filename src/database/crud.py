@@ -138,6 +138,24 @@ class SQLAlchemyCRUD:
 
         return task
     
+
+    async def get_images_paths_by_user_id(self, user_id: int):
+
+        paths = [] 
+
+        query = select(Task.result_path).join(ImageHistory, Task.id == ImageHistory.task_id).where(ImageHistory.user_id == user_id)
+
+        result = await self._db_session.execute(query)
+
+        histories = result.fetchall()
+
+        for i, path in enumerate(histories):
+
+            paths.append(path.t[0])
+
+        return paths
+
+    
     async def update_task_msg_id(self, task_id: int, new_msg_id: str):
 
         stmt = update(Task).where(Task.id == task_id).values(msg_id = new_msg_id)

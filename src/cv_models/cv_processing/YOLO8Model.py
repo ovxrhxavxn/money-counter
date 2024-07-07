@@ -75,7 +75,39 @@ class CVModel:
         "500 rubles": 500,
         "5000 rubles": 5000
     }
+    __colors = {
+        "1000rub_note": (255, 0, 0),
+        "100rub_note": (0, 255, 0),
+        "10kop": (0, 0, 255),
+        "10rub_coin": (255, 255, 0),
+        "1rub_coin": (0, 255, 255),
+        "2000rub_note": (255, 0, 255),
+        "200rub_note": (192, 192, 192),
+        "2rub_coin":(128, 128, 128),
+        "5000rub_note":(128, 0, 0),
+        "500rub_note": (128, 128, 0),
+        "50kop": (0, 128, 0),
+        "50rub_note": (128, 0, 128),
+        "5rub_coin": (0, 128, 128),
+        "5rub_note": (0, 0, 128),
+        "backsite": (47, 79, 47), "not_money": (0, 206, 209),
+        "1 kopeck":(72, 61, 139),
+        "1 ruble": (0, 255, 255),
+        "10 kopecks": (0, 0, 255),
+        "10 rubles": (255, 255, 0),
+        "100 rubles": (0, 255, 0),
+        "1000 rubles": (255, 0, 0),
+        "2 rubles":(128, 128, 128),
+        "200 rubles": (192, 192, 192),
+        "2000 rubles": (255, 0, 255),
+        "5 kopecks": (0, 0, 128),
+        "5 rubles": (0, 128, 128),
+        "50 kopecks": (0, 128, 0),
+        "50 rubles": (128, 0, 128),
+        "500 rubles": (128, 128, 0),
+        "5000 rubles": (128, 0, 0)
 
+    }
     @staticmethod
     def __classify_item(item_path: str):
         result = CVModel.model_classifier(item_path)
@@ -85,14 +117,14 @@ class CVModel:
         return money_class, probability
 
     @staticmethod
-    def __detect_objects_on_image(buf: bytes, num: int):
+    def __detect_objects_on_image(buf, num: int):
 
         input, img_width, img_height = CVModel.__prepare_input(buf)
         output = CVModel.__run_model(input, num)
         return CVModel.__process_output(output,img_width,img_height)
 
     @staticmethod
-    def __prepare_input(buf: bytes):
+    def __prepare_input(buf):
         img = Image.open(io.BytesIO(buf))
         img_width, img_height = img.size
         img = img.resize((640, 640))
@@ -187,7 +219,7 @@ class CVModel:
             sum += CVModel.__yolo_classes_sum[money_class]
 
             text = f"{money_class}\n{round(prob, 3)}"
-            draw.rectangle((x, y, width, height), outline=(255, 0, 0), width=5)
+            draw.rectangle((x, y, width, height), outline=CVModel.__colors[money_class], width=5)
             draw.text((x, y, width, height), text=text, fill=None, font=font, anchor=None, spacing=0, align="left")
 
             money_classes.append(money_class)

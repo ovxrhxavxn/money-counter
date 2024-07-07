@@ -80,7 +80,7 @@ class CVAPI:
 
             await crud.get_user(user_name)
 
-            path = Path(f'database\\images\\{last_task.id}.jpeg').resolve()
+            path = Path(f'database\\images\\{last_task.id}.jpg').resolve()
 
             UtilsMethod().save_image(path, image.file.read())
 
@@ -119,7 +119,7 @@ class CVAPI:
 
             await crud.get_user(user_name)
 
-            path = Path(f'database\\images\\{last_task.id}.jpeg').resolve()
+            path = Path(f'database\\images\\{last_task.id}.jpg').resolve()
 
             UtilsMethod().save_image(path, image.file.read())
 
@@ -185,7 +185,23 @@ class CVAPI:
         
 
     @staticmethod
-    @__ROUTER.get('/models/tasks/{user_name}')
-    async def get_user_tasks_history(user_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
+    @__ROUTER.get('/models/tasks/history/{user_name}')
+    async def get_user_image_history(user_name: str, session: AsyncSession = Depends(SQLAlchemyDBHelper().get_async_session)):
 
-        pass
+        base64_images = []
+
+        crud = SQLAlchemyCRUD(session)
+
+        paths = await crud.get_images_paths_by_user_id(await crud.get_user_id(user_name))
+
+        for path in paths:
+
+            base64_images.append(
+
+                base64.b64encode(UtilsMethod().read_image(Path(path).resolve())).decode()
+            )
+
+        return JSONResponse(content={
+
+            user_name : base64_images
+        })
