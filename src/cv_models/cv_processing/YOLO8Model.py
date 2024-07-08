@@ -56,6 +56,7 @@ class CVModel:
     ]
 
     __yolo_classes_sum = {
+        "5-kopecks": 0.05,
         "10kop": 0.1, "50kop": 0.5, "1rub_coin": 1, "2rub_coin": 2, "5rub_coin": 5,
         "5rub_note": 5, "10rub_coin": 10, "50rub_note": 50, "100rub_note": 100, "200rub_note": 200,
         "500rub_note": 500, "1000rub_note": 1000, "2000rub_note": 2000, "5000rub_note": 5000,
