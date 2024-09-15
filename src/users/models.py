@@ -1,15 +1,21 @@
-from sqlalchemy import Integer, String, Column, Date
-from datetime import datetime as dt, UTC
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import text
 
 from database.database import Base
+from database.annotated_type import (
+
+    intpk,
+    utcnow
+)
+from roles.schemas import Role
 
 
 class User(Base):
 
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    role = Column(String, nullable=False)
-    token_amount = Column(Integer, nullable=False, )
-    registration_date = Column(Date, nullable=False, default=dt.now(UTC).date())
+    id: Mapped[intpk]
+    name: Mapped[str] = mapped_column(unique=True)
+    role: Mapped[Role]
+    token_amount: Mapped[int]
+    registration_date: Mapped[utcnow]
