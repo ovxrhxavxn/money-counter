@@ -1,55 +1,37 @@
-import os
-
-from fastapi import FastAPI, APIRouter
 from contextlib import asynccontextmanager
-from pathlib import Path
+
+from fastapi import (
+
+    FastAPI
+)
 
 from database.database import SQLAlchemyDBHelper
-from database.crud import SQLAlchemyCRUD
-from cv_models.schemas import CVModelEnum, CVModelSchema
+from users.router import router as users_router
+from cv_models.router import router as cv_models_router
 
 
-class FastAPIAppWrapper:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
-    def __init__(self):
+    await SQLAlchemyDBHelper().create_tables()
 
-        self.__app = FastAPI(
-
-            lifespan=self.lifespan,
-            title='Money Counter',
-            summary='Backend для проекта Money Counter',
-            version='1.0.0'
-        )
-
-    @property
-    def app(self):
-        return self.__app
-    
-
-    def include_routers_to_app(self, routers: list[APIRouter]):
-
-        for router in routers:
-            self.__app.include_router(router)
+    yield
 
 
-    async def __create_and_fill_tables(self):
-    
-        if not os.path.exists(Path('database\\app.db')):
+app = FastAPI(
 
-            db_helper = SQLAlchemyDBHelper()
+    lifespan=lifespan,
+    title='Money Counter',
+    summary='Backend для проекта Money Counter',
+    version='1.0.0'
 
-            await db_helper.create_tables()
+    )
 
-            async_generator = db_helper.get_async_session()
+routers = [
 
-            session = await async_generator.__anext__()
+    users_router,
+    cv_models_router
+]
 
-            await SQLAlchemyCRUD(session).fill_cv_model_table()
-
-
-    @asynccontextmanager
-    async def lifespan(self, app: FastAPI):
-
-        await self.__create_and_fill_tables()
-
-        yield
+for router in routers:
+    app.include_router(router)
