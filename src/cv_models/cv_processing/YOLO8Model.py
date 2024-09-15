@@ -16,10 +16,10 @@ from pathlib import Path
 # model = project.version(2).model
 class CVModel:
 
-    model_detector_M = ort.InferenceSession(Path('cv_models\\cv_processing\\NewDetector.onnx').resolve())
-    model_detector_N = ort.InferenceSession(Path('cv_models\\cv_processing\\DetectN.onnx').resolve())
-    model_detector_S = ort.InferenceSession(Path('cv_models\\cv_processing\\DetectorS.onnx').resolve())
-    model_classifier = YOLO(Path('cv_models\\cv_processing\\classifier.pt').resolve())
+    model_detector_M = ort.InferenceSession(Path('cv_models/cv_processing/NewDetector.onnx').resolve())
+    model_detector_N = ort.InferenceSession(Path('cv_models/cv_processing/DetectN.onnx').resolve())
+    model_detector_S = ort.InferenceSession(Path('cv_models/cv_processing/DetectorS.onnx').resolve())
+    model_classifier = YOLO(Path('cv_models/cv_processing/classifier.pt').resolve())
 
     __yolo_classes = [
         "1000rub_note",
@@ -198,7 +198,7 @@ class CVModel:
     def __work_with_items(task_id: int, img: bytes, coordinates_list: list): # drawing and classifiyng
 
         image = Image.open(io.BytesIO(img))
-        font = ImageFont.truetype(Path(f'cv_models\\cv_processing\\Karla-VariableFont_wght.ttf').resolve(), 60)
+        font = ImageFont.truetype(Path(f'cv_models/cv_processing/Karla-VariableFont_wght.ttf').resolve(), 60)
         i = 0
         sum = 0
         money_classes = []
@@ -227,7 +227,7 @@ class CVModel:
             i += 1
         # Сохранение главной картинки. Потом убрать
         # //
-        image.save(Path(f'database\\images\\processed\\{task_id}Result.jpeg'))
+        image.save(Path(f'database/images/processed/{task_id}Result.jpeg'))
         # //
         img_byte_main = io.BytesIO()            
         image.save(img_byte_main, format="JPEG")
