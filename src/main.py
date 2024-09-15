@@ -1,17 +1,15 @@
-from app import FastAPIAppWrapper
-from users.api import UserAPI
-from cv_models.api import CVAPI
+import uvicorn
 
 
-app_wrapper = FastAPIAppWrapper()
+def main():
 
-app = app_wrapper.app
+    uvicorn.run (
 
-routers = [
-    
-    CVAPI().router,
-    UserAPI().router
+        app='app:app',
+        host='127.0.0.1',
+        port=8000
+    )
 
-    ]
-    
-app_wrapper.include_routers_to_app(routers)
+
+if __name__ == '__main__':
+    main()
