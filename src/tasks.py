@@ -1,33 +1,33 @@
-import dramatiq
-import dramatiq.asyncio
-
-from dramatiq.brokers.redis import RedisBroker
-from dramatiq.middleware.asyncio import AsyncIO
 from pathlib import Path
+
+# import dramatiq
+# import dramatiq.asyncio
+# from dramatiq.brokers.redis import RedisBroker
+# from dramatiq.middleware.asyncio import AsyncIO
 
 from database.crud import SQLAlchemyCRUD
 from database.database import SQLAlchemyDBHelper
 from cv_models.schemas import TaskId, ImageHistorySchema, CVModelEnum
 from cv_models.cv_processing.YOLO8Model import CVModel
-from utils import UtilsMethod
+from utils.image import Image
 
 
-broker = RedisBroker(url='redis://localhost:6379')
-broker.add_middleware(AsyncIO())
-dramatiq.set_broker(broker)
+# broker = RedisBroker(url='redis://localhost:6379')
+# broker.add_middleware(AsyncIO())
+# dramatiq.set_broker(broker)
 
 class TasksSet:
 
-    @dramatiq.actor
-    @dramatiq.asyncio.async_to_sync
+    # @dramatiq.actor
+    # @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8s(user_name: str, task_id: int, image_path: Path):
         
-        utils_method = UtilsMethod()
+        utils_method = Image()
         
         # TODO: Реализация работы с моделью
 
-        image_bytes = utils_method.read_image(image_path)
+        image_bytes = utils_method.read(image_path)
 
         sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
@@ -56,16 +56,16 @@ class TasksSet:
         ))
 
 
-    @dramatiq.actor
-    @dramatiq.asyncio.async_to_sync
+    # @dramatiq.actor
+    # @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8m(user_name: str, task_id: int, image_path: str):
 
-        utils_method = UtilsMethod()
+        utils_method = Image()
         
         # TODO: Реализация работы с моделью
 
-        image_bytes = utils_method.read_image(image_path)
+        image_bytes = utils_method.read(image_path)
 
         sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
@@ -94,16 +94,16 @@ class TasksSet:
         ))
 
 
-    @dramatiq.actor
-    @dramatiq.asyncio.async_to_sync
+    # @dramatiq.actor
+    # @dramatiq.asyncio.async_to_sync
     @staticmethod
     async def use_yolo8n(user_name: str, task_id: int, image_path: str):
 
-        utils_method = UtilsMethod()
+        utils_method = Image()
         
         # TODO: Реализация работы с моделью
 
-        image_bytes = utils_method.read_image(image_path)
+        image_bytes = utils_method.read(image_path)
 
         sum, _, _ = CVModel.Yolo8N_Work(task_id, image_bytes)
 
