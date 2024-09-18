@@ -1,6 +1,5 @@
-from pydantic import BaseModel
-from sqlalchemy.types import Date
 from enum import StrEnum
+from pydantic import BaseModel
 
 
 class CVModelEnum(StrEnum):
@@ -11,7 +10,7 @@ class CVModelEnum(StrEnum):
 
 class CVModelSchema(BaseModel):
 
-    name: str
+    name: CVModelEnum
     cost: int
 
 class RequestToModel(BaseModel):
