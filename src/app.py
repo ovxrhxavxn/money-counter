@@ -5,15 +5,15 @@ from fastapi import (
     FastAPI
 )
 
-from database.database import SQLAlchemyDBHelper
 from users.router import router as users_router
 from cv_models.router import router as cv_models_router
+from database.orm.sqlalchemy.stuff import create_tables
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    await SQLAlchemyDBHelper().create_tables()
+    await create_tables()
 
     yield
 
