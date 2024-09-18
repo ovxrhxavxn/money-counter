@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey
 
-from database.database import Base
-from database.annotated_type import (
+from database.orm.sqlalchemy.stuff import Base
+from database.annotated_types import (
 
     intpk,
     utcnow
