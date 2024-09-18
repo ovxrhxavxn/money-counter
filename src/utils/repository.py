@@ -4,20 +4,13 @@ from abc import ABC, abstractmethod
 class AbstractRepository(ABC):
 
     @abstractmethod
-    async def add_one(self):
-        raise NotImplementedError()
-    
+    async def add(self):
+        pass
+
     @abstractmethod
-    async def find_all(self):
-        raise NotImplementedError()
-    
+    async def get(self):
+        pass
 
-class SQLAlchemyRepository(AbstractRepository):
-
-    model = None
-
-    async def add_one(self):
-        raise NotImplementedError()
-
-    async def find_all(self):
-        raise NotImplementedError()
+    @abstractmethod
+    async def delete(self):
+        pass
