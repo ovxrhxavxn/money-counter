@@ -1,12 +1,12 @@
 from sqlalchemy import select, update
 
-from database.orm.sqlalchemy.repository import SQLAlchemyRepository
+from database.repositories import AbstractUserRepository
 from database.orm.sqlalchemy.stuff import async_session_maker
-from .models import User
+from database.orm.sqlalchemy.models import User
 from .schemas import UserSchema, UserDate
 
 
-class UserRepository(SQLAlchemyRepository):
+class UserRepository(AbstractUserRepository):
 
     model = User
     
@@ -60,9 +60,9 @@ class UserRepository(SQLAlchemyRepository):
         return users
     
 
-    async def subtract_from_user_token_amount(self, name: str, cost: int):
+    async def subtract_from_token_amount(self, name: str, cost: int):
 
-        user = await self.get_by_name(name)
+        user = await self.get(name)
 
         async with async_session_maker() as session:
 
