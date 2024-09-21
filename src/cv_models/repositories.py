@@ -1,19 +1,34 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert, delete
 
-from database.orm.sqlalchemy.repository import SQLAlchemyRepository
 from database.orm.sqlalchemy.stuff import async_session_maker
-from .models import (
+from database.repositories import (
+    
+    AbstractCVModelsRepository, 
+    AbstractTasksRepository,
+    AbstractTaskHistoryRepository
+)
+from database.orm.sqlalchemy.models import (
 
     Task,
     CVModelTable,
-    ImageHistory
+    TaskHistory
 )
 from .schemas import TaskId, CVModelSchema
 
 
-class CVModelRepository(SQLAlchemyRepository):
+class CVModelRepository(AbstractCVModelsRepository):
 
     model = CVModelTable
+
+    async def add(self, schema: dict):
+
+        async with async_session_maker() as session:
+
+            stmt = insert(self.model).values(schema)
+
+            await session.execute(stmt)
+            await session.commit()
+
 
     async def get(self, name: str):
 
@@ -57,9 +72,33 @@ class CVModelRepository(SQLAlchemyRepository):
             await session.commit()
 
 
-class TaskRepository(SQLAlchemyRepository):
+class TaskRepository(AbstractTasksRepository):
 
     model = Task
+
+
+    async def get(self, id: int):
+
+        async with async_session_maker() as session:
+        
+            query = select(self.model).where(Task.id == id)
+
+            result = await session.execute(query)
+
+            task_from_db = result.all()[0].t[0]
+
+            task = TaskId(
+
+                id=task_from_db.id,
+                cv_model_id=task_from_db.cv_model_id,
+                msg_id=task_from_db.msg_id,
+                result_path=task_from_db.result_path,
+                result_sum=task_from_db.result_sum
+            )
+
+            return task
+    
+
 
     async def get_by_msg_id(self, msg_id: str):
 
@@ -76,7 +115,7 @@ class TaskRepository(SQLAlchemyRepository):
                 id=task_from_db.id,
                 cv_model_id=task_from_db.cv_model_id,
                 msg_id=task_from_db.msg_id,
-                result_path=task_from_db.result_path,
+                image_id=task_from_db.result_path,
                 result_sum=task_from_db.result_sum
             )
 
@@ -108,7 +147,7 @@ class TaskRepository(SQLAlchemyRepository):
                 id=task_from_db.id,
                 cv_model_id=task_from_db.cv_model_id,
                 msg_id=task_from_db.msg_id,
-                result_path=task_from_db.result_path,
+                image_id=task_from_db.result_path,
                 result_sum=task_from_db.result_sum
             )
 
@@ -135,9 +174,20 @@ class TaskRepository(SQLAlchemyRepository):
             await session.commit()
 
 
-class ImageHistoryRepository(SQLAlchemyRepository):
+    async def delete(self, id: int):
 
-    model = ImageHistory
+        async with async_session_maker() as session:
+
+            stmt = delete(self.model)
+
+            await session.execute(stmt)
+            await session.commit()
+
+
+class TaskHistoryRepository(AbstractTaskHistoryRepository):
+
+    model = TaskHistory
+
 
     async def get(self, name: str):
 
@@ -157,6 +207,16 @@ class ImageHistoryRepository(SQLAlchemyRepository):
 
             return model
         
+
+    async def add(self, schema: dict):
+
+        async with async_session_maker() as session:
+
+            stmt = insert(self.model).values(schema)
+
+            await session.execute(stmt)
+            await session.commit()
+
 
     async def get_user_history(self, user_name: str):
 
