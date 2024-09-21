@@ -1,30 +1,15 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-
-from cv_models.router import router as cv_router
-from users.router import router as users_router
-from database.database import create_tables
+import uvicorn
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    
-    await create_tables()
+def main():
 
-    yield   
+    uvicorn.run (
 
-app = FastAPI(
-    lifespan=lifespan,
-    title='Money Counter',
-    summary='Backend для проекта Money Counter',
-    version='1.0.0'
-)
+        app='app:app',
+        host='127.0.0.1',
+        port=8000
+    )
 
-routers = [
 
-    cv_router,
-    users_router
-]
-
-for router in routers:
-    app.include_router(router)
+if __name__ == '__main__':
+    main()

@@ -1,10 +1,22 @@
-from pydantic import BaseModel, Field
+from datetime import date
 
-from roles.schemas import RoleEnum
+from pydantic import BaseModel
+
+from roles.schemas import Role
 
 
-class User(BaseModel):
+class UserSchema(BaseModel):
 
     name: str
-    role: RoleEnum
+    role: Role
     token_amount: int
+
+
+class UserId(UserSchema):
+
+    id: int
+
+
+class UserDate(UserSchema):
+
+    registration_date: date

@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field
 from enum import StrEnum
 
 
-class RoleEnum(StrEnum):
+class Role(StrEnum):
 
     CLIENT = 'client'
     MANAGER = 'manager'
