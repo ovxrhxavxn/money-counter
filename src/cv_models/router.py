@@ -2,15 +2,18 @@ import base64
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, UploadFile, WebSocket
+from fastapi import APIRouter, Depends, UploadFile
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from PIL.Image import Image
 
 from .schemas import CVModelEnum, TaskSchema, CVModelSchema, TaskResult
-from .services import CVModelsService
-from .dependencies import get_cv_models_service
+from .services import CVModelsService, TasksService
+from .dependencies import (
+
+    get_cv_models_service, 
+    get_tasks_service
+)
 
 
 router = APIRouter (
@@ -27,7 +30,13 @@ async def use_yolo8s(
     image: UploadFile, 
     service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
 
-    return await service.use_yolo8s(user_name, image)
+    try:
+
+        return await service.use_yolo8s(user_name, image)
+    
+    except IndexError:
+        
+        raise HTTPException(404, detail='The user doesn`t exist')
     
 
 @router.post(f'/models/{CVModelEnum.YOLO8M}', status_code=202)
@@ -37,7 +46,13 @@ async def use_yolo8m(
     image: UploadFile, 
     service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
 
-    return await service.use_yolo8s(user_name, image)
+    try:
+
+        return await service.use_yolo8s(user_name, image)
+
+    except IndexError:
+        
+        raise HTTPException(404, detail='The user doesn`t exist')
 
 
 @router.post(f'/models/{CVModelEnum.YOLO8N}', status_code=202)
@@ -47,29 +62,40 @@ async def use_yolo8n(
     image: UploadFile, 
     service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
 
-    return await service.use_yolo8n(user_name, image)
+    try:
 
-
-# @router.get('/models/tasks/{task_id}', response_model=TaskResult)
-# async def get_task_result(task_id: str, session: AsyncSession = Depends(SQLAlchemyHandler().get_async_session)):
-
-#     task = await SQLAlchemyCRUD(session).get_task_by_msg_id(task_id)
-
-#     if task.result_path is None:
+        return await service.use_yolo8n(user_name, image)
     
-#         raise HTTPException(202, detail='The task is in processing')
+    except IndexError:
+
+        raise HTTPException(404, detail='The user doesn`t exist')
+
+
+@router.get('/models/tasks/{task_id}', response_model=TaskResult)
+async def get_task_result(
     
-
-#     img_bytes = Image().read(Path(task.result_path).resolve())
-
-#     encoded_string = base64.b64encode(img_bytes).decode()
+    task_id: str, 
+    service: Annotated[TasksService, Depends(get_tasks_service)]
     
+    ):
 
-#     return JSONResponse(content={
+    try:
 
-#         'image' : encoded_string,
-#         'total' : task.result_sum
-#     })
+        task = await service.check_task_result(task_id)
+
+        img_bytes = await (Path(task.image_id).resolve())
+
+        encoded_string = base64.b64encode(img_bytes).decode()
+
+        return JSONResponse(content={
+
+            'image' : encoded_string,
+            'total' : task.result_sum
+        })
+    
+    except ValueError:
+
+        raise HTTPException(202, detail="The task is in processing")
 
 
 @router.get('/models/{model_name}', response_model=CVModelSchema)
