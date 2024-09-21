@@ -1,20 +1,25 @@
 import io
-
-import onnxruntime as ort
-from PIL import Image, ImageDraw
-import numpy as np
-
-from PIL import ImageFont
-from ultralytics import YOLO
+from abc import ABC, abstractmethod
 from pathlib import Path
 
-# from roboflow import Roboflow
-#
-#
-# rf = Roboflow(api_key="z1B73yP5LSQJhcOeuKL9")
-# project = rf.workspace().project("detect-money")
-# model = project.version(2).model
-class CVModel:
+import onnxruntime as ort
+from PIL import (
+    
+    Image, 
+    ImageDraw, 
+    ImageFont
+)
+import numpy as np
+from ultralytics import YOLO
+
+from ..schemas import CVModelEnum
+
+
+class YOLO8Model(ABC):
+
+    name: CVModelEnum = None
+
+    nums_of_processed_images = 0
 
     model_detector_M = ort.InferenceSession(Path('cv_models/cv_processing/NewDetector.onnx').resolve())
     model_detector_N = ort.InferenceSession(Path('cv_models/cv_processing/DetectN.onnx').resolve())
@@ -109,9 +114,17 @@ class CVModel:
         "5000 rubles": (128, 0, 0)
 
     }
+
+    @abstractmethod
+    def use(self, image: bytes) -> tuple[int, bytes, list]:
+        
+        raise NotImplementedError()
+        
+
+
     @staticmethod
     def __classify_item(item_path: str):
-        result = CVModel.model_classifier(item_path)
+        result = YOLO8Model.model_classifier(item_path)
         probs = result[0].probs  # Class probabilities for classification outputs
         money_class = result[0].names[probs.top1]
         probability = probs.top1conf.item()
@@ -120,9 +133,9 @@ class CVModel:
     @staticmethod
     def __detect_objects_on_image(buf, num: int):
 
-        input, img_width, img_height = CVModel.__prepare_input(buf)
-        output = CVModel.__run_model(input, num)
-        return CVModel.__process_output(output,img_width,img_height)
+        input, img_width, img_height = YOLO8Model.__prepare_input(buf)
+        output = YOLO8Model.__run_model(input, num)
+        return YOLO8Model.__process_output(output,img_width,img_height)
 
     @staticmethod
     def __prepare_input(buf):
@@ -139,16 +152,16 @@ class CVModel:
     def __run_model(input, num: int):
         # Это модель детекции
         if(num == 1):
-            outputs = CVModel.model_detector_M.run(["output0"], {"images":input})
+            outputs = YOLO8Model.model_detector_M.run(["output0"], {"images":input})
         elif(num == 2):
-            outputs = CVModel.model_detector_N.run(["output0"], {"images": input})
+            outputs = YOLO8Model.model_detector_N.run(["output0"], {"images": input})
         else:
-            outputs = CVModel.model_detector_S.run(["output0"], {"images": input})
+            outputs = YOLO8Model.model_detector_S.run(["output0"], {"images": input})
         return outputs[0]
 
     @staticmethod
     def __iou(box1,box2):
-        return CVModel.__intersection(box1,box2)/CVModel.__union(box1,box2)
+        return YOLO8Model.__intersection(box1,box2)/YOLO8Model.__union(box1,box2)
 
     @staticmethod
     def __union(box1,box2):
@@ -156,7 +169,7 @@ class CVModel:
         box2_x1,box2_y1,box2_x2,box2_y2 = box2[:4]
         box1_area = (box1_x2-box1_x1)*(box1_y2-box1_y1)
         box2_area = (box2_x2-box2_x1)*(box2_y2-box2_y1)
-        return box1_area + box2_area - CVModel.__intersection(box1,box2)
+        return box1_area + box2_area - YOLO8Model.__intersection(box1,box2)
 
     @staticmethod
     def __intersection(box1,box2):
@@ -179,7 +192,7 @@ class CVModel:
             if prob < 0.5:
                 continue
             class_id = row[4:].argmax()
-            label = CVModel.__yolo_classes[class_id]
+            label = YOLO8Model.__yolo_classes[class_id]
             xc, yc, w, h = row[:4]
             x1 = (xc - w/2) / 640 * img_width
             y1 = (yc - h/2) / 640 * img_height
@@ -191,11 +204,12 @@ class CVModel:
         result = []
         while len(boxes) > 0:
             result.append(boxes[0])
-            boxes = [box for box in boxes if CVModel.__iou(box, boxes[0]) < 0.7]
+            boxes = [box for box in boxes if YOLO8Model.__iou(box, boxes[0]) < 0.7]
         return result
 
-    @staticmethod
-    def __work_with_items(task_id: int, img: bytes, coordinates_list: list): # drawing and classifiyng
+
+    @classmethod
+    def __work_with_items(cls, img: bytes, coordinates_list: list): # drawing and classifiyng
 
         image = Image.open(io.BytesIO(img))
         font = ImageFont.truetype(Path(f'cv_models/cv_processing/Karla-VariableFont_wght.ttf').resolve(), 60)
@@ -216,18 +230,21 @@ class CVModel:
             img_byte= io.BytesIO()
             cropped.save(img_byte, format="JPEG")
             img_byte_array.append(img_byte.getvalue())
-            money_class, prob = CVModel.__classify_item(item_path)
-            sum += CVModel.__yolo_classes_sum[money_class]
+            money_class, prob = YOLO8Model.__classify_item(item_path)
+            sum += YOLO8Model.__yolo_classes_sum[money_class]
 
             text = f"{money_class}\n{round(prob, 3)}"
-            draw.rectangle((x, y, width, height), outline=CVModel.__colors[money_class], width=5)
+            draw.rectangle((x, y, width, height), outline=YOLO8Model.__colors[money_class], width=5)
             draw.text((x, y, width, height), text=text, fill=None, font=font, anchor=None, spacing=0, align="left")
 
             money_classes.append(money_class)
             i += 1
         # Сохранение главной картинки. Потом убрать
         # //
-        image.save(Path(f'database/images/processed/{task_id}Result.jpeg'))
+
+        cls.nums_of_processed_images += 1
+
+        image.save(Path(f'database/images/processed/{cls.nums_of_processed_images}Result.jpeg'))
         # //
         img_byte_main = io.BytesIO()            
         image.save(img_byte_main, format="JPEG")
@@ -235,36 +252,65 @@ class CVModel:
 
         return sum, img_byte_main, img_byte_array
 
-    @staticmethod
-    def Yolo8M_Work(task_id: int, img: bytes):
-        coordinates_list = CVModel.__detect_objects_on_image(img, 1)
-        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
-        return message_sum, img_byte_main, img_byte_array
 
     @staticmethod
-    def Yolo8N_Work(task_id: int, img: bytes):
-        coordinates_list = CVModel.__detect_objects_on_image(img, 2)
-        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
+    def _Yolo8M_Work(cls, img: bytes):
+        coordinates_list = YOLO8Model.__detect_objects_on_image(img, 1)
+        message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
+
         return message_sum, img_byte_main, img_byte_array
+
 
     @staticmethod
-    def Yolo8S_Work(task_id: int, img: bytes):
-        coordinates_list = CVModel.__detect_objects_on_image(img, 3)
-        message_sum, img_byte_main, img_byte_array = CVModel.__work_with_items(task_id, img, coordinates_list)
+    def _Yolo8N_Work(cls, img: bytes):
+        coordinates_list = YOLO8Model.__detect_objects_on_image(img, 2)
+        message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
+
         return message_sum, img_byte_main, img_byte_array
 
-# Тестовый код. Конвертирует картинку в байтовый формат для передачи в метод
-# //
-# file_name = f"neuro_processing/0ЫЫЫЫЫЫ.jpeg"
 
-# img = Image.open(file_name)
-# img_byte = io.BytesIO()
-# img.save(img_byte, format="JPEG")
-# img_byte = img_byte.getvalue()
-# # //
+    @staticmethod
+    def _Yolo8S_Work(cls, img: bytes):
+        coordinates_list = YOLO8Model.__detect_objects_on_image(img, 3)
+        message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
-# # МЕТОД, КОТОРЫЙ ДЕЛАЕТ ВСЮ МАГИЮ
-# message_sum, img_byte_main, img_byte_array = Model.Yolo8M_Work(img_byte)
+        return message_sum, img_byte_main, img_byte_array
+    
 
-# print(message_sum)
-# print(img_byte_main)
+class YOLO8N(YOLO8Model):
+
+    name = CVModelEnum.YOLO8N
+
+    def __init__(self) -> None:
+        super().__init__()
+        
+
+    def use(self, image: bytes):
+
+        return self._Yolo8N_Work(image)
+
+
+class YOLO8S(YOLO8Model):
+
+    name = CVModelEnum.YOLO8S
+
+    def __init__(self) -> None:
+        super().__init__()
+        
+
+    def use(self, image: bytes):
+
+        return self._Yolo8S_Work(image)
+
+
+class YOLO8M(YOLO8Model):
+
+    name = CVModelEnum.YOLO8M
+
+    def __init__(self) -> None:
+        super().__init__()
+        
+
+    def use(self, image: bytes):
+
+        return self._Yolo8M_Work(image)
