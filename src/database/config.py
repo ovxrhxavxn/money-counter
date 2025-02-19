@@ -1,15 +1,9 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from config import BaseConfig
 
 
-class DBConfig(BaseSettings):
+class DBConfig(BaseConfig):
 
     db_url: str
-
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore"  # Игнорировать лишние переменные в .env
-    )
 
 
 config = DBConfig()
