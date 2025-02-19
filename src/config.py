@@ -1,11 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class AppConfig(BaseSettings):
-
-    host: str
-    port: int
-    reload: bool
+class BaseConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -14,4 +10,11 @@ class AppConfig(BaseSettings):
     )
 
 
+class AppConfig(BaseConfig):
+
+    host: str
+    port: int
+    reload: bool
+
+    
 config = AppConfig()
