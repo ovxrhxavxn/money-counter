@@ -23,7 +23,7 @@ app = FastAPI(
     lifespan=lifespan,
     title='Money Counter',
     summary='Backend для проекта Money Counter',
-    version='1.0.0'
+    version='0.1.0'
 
     )
 
