@@ -1,15 +1,15 @@
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert
 
-from database.repositories import AbstractUserRepository
 from database.orm.sqlalchemy.stuff import async_session_maker
 from database.orm.sqlalchemy.models import User
-from .schemas import UserSchema, UserDate
+from database.repositories import SQLAlchemyRepository
 
 
-class UserRepository(AbstractUserRepository):
+class UserRepository(SQLAlchemyRepository[User]):
 
-    model = User
-    
+    def __init__(self):
+        super().__init__(User)
+
     async def get(self, name: str):
 
         async with async_session_maker() as session:
@@ -18,47 +18,18 @@ class UserRepository(AbstractUserRepository):
 
             result = await session.execute(query)
 
-            user_from_db = result.all()[0].t[0]
+            return result.scalar_one()
+        
 
-            user = UserSchema(
-
-                name=user_from_db.name,
-                role=user_from_db.role,
-                token_amount=user_from_db.token_amount
-            )
-
-            return user
-    
-
-    async def get_all(self) -> list[UserDate]:
-
-        users = []
-
+    async def get_id(self, name: str) -> int:
         async with async_session_maker() as session:
 
-            users_query = select(self.model)
+            query = select(self.model).where(self.model.name == name)
 
-            users_result = await session.execute(users_query)
+            result = await session.execute(query)
 
-            users_from_db = users_result.all()
-
-            for i, row in enumerate(users_from_db):
-
-                for j, user in enumerate(row.t):
-
-                    users.append(
-
-                        UserDate(
-
-                            name=user.name,
-                            role=user.role,
-                            token_amount=user.token_amount,
-                            registration_date=user.registration_date
-                        )
-                    )
-
-        return users
-    
+            return result.scalar_one().id
+        
 
     async def subtract_from_token_amount(self, name: str, cost: int):
 
@@ -90,16 +61,3 @@ class UserRepository(AbstractUserRepository):
 
             await session.execute(stmt)
             await session.commit()
-
-
-    async def get_id(self, user_name: str):
-
-        async with async_session_maker() as session:
-
-            query = select(self.model).where(self.model.name == user_name)
-
-            result = await session.execute(query)
-
-        user_from_db = result.all()[0].t[0]
-
-        return user_from_db.id
