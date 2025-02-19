@@ -1,15 +1,15 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import sessionmaker
-    
+from ...config import config
+
 
 class Base(DeclarativeBase): pass
 
-db_url = "sqlite+aiosqlite:///database/app.db"
 
 async_engine = create_async_engine(
              
-            url=db_url, connect_args={"check_same_thread": False}
+            url=config.db_url, connect_args={"check_same_thread": False}
         )
         
 async_session_maker: type[AsyncSession] = sessionmaker(bind=async_engine, class_=AsyncSession, expire_on_commit=False)
