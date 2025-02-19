@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserSchema, UserDate
+from .schemas import User, UserDate
 from .services import UserService
 from .dependencies import get_user_service
 
@@ -19,7 +19,7 @@ router = APIRouter(
 @router.post('/')
 async def add_user(
     
-    user: UserSchema,
+    user: User,
     service: Annotated[UserService, Depends(get_user_service)]
     
     ):
@@ -33,7 +33,7 @@ async def add_user(
         raise HTTPException(400, detail='The user`s name already exists')
     
 
-@router.get('/{user_name}', response_model=UserSchema)
+@router.get('/{user_name}', response_model=User)
 async def get_user(
     
     user_name: str,
