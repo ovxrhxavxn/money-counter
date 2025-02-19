@@ -16,12 +16,6 @@ class CVModelSchema(BaseModel):
     cost: int
 
 
-class RequestToModel(BaseModel):
-
-    user_name: str
-    image: str
-
-
 class TaskSchema(BaseModel):
 
     cv_model_id: int
