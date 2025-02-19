@@ -2,7 +2,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.orm.sqlalchemy.stuff import Base
-from database.annotated_types import (
+from database.orm.sqlalchemy.annotated_types import (
 
     intpk,
     utcnow
