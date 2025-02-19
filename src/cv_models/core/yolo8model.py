@@ -21,10 +21,10 @@ class YOLO8Model(ABC):
 
     nums_of_processed_images = 0
 
-    model_detector_M = ort.InferenceSession(Path('cv_models/cv_processing/NewDetector.onnx').resolve())
-    model_detector_N = ort.InferenceSession(Path('cv_models/cv_processing/DetectN.onnx').resolve())
-    model_detector_S = ort.InferenceSession(Path('cv_models/cv_processing/DetectorS.onnx').resolve())
-    model_classifier = YOLO(Path('cv_models/cv_processing/classifier.pt').resolve())
+    model_detector_M = ort.InferenceSession(Path('cv_models/core/NewDetector.onnx').resolve())
+    model_detector_N = ort.InferenceSession(Path('cv_models/core/DetectN.onnx').resolve())
+    model_detector_S = ort.InferenceSession(Path('cv_models/core/DetectorS.onnx').resolve())
+    model_classifier = YOLO(Path('cv_models/core/classifier.pt').resolve())
 
     __yolo_classes = [
         "1000rub_note",
@@ -117,10 +117,8 @@ class YOLO8Model(ABC):
 
     @abstractmethod
     def use(self, image: bytes) -> tuple[int, bytes, list]:
+        ...
         
-        raise NotImplementedError()
-        
-
 
     @staticmethod
     def __classify_item(item_path: str):
