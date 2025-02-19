@@ -5,18 +5,21 @@ from pydantic import BaseModel
 from roles.schemas import Role
 
 
-class UserSchema(BaseModel):
+class User(BaseModel):
 
     name: str
     role: Role
     token_amount: int
 
 
-class UserId(UserSchema):
+class UserFromDB(User):
 
     id: int
 
 
-class UserDate(UserSchema):
+class UserDate(User):
 
     registration_date: date
+
+    class Config:
+        from_attributes = True
