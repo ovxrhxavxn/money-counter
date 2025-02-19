@@ -32,8 +32,8 @@ async def use_yolo8s(
 
     try:
 
-        return await service.use_yolo8s(user_name, image)
-    
+        return await service.use_yolo8s(user_name, image.file.read())
+
     except IndexError:
         
         raise HTTPException(404, detail='The user doesn`t exist')
@@ -48,7 +48,7 @@ async def use_yolo8m(
 
     try:
 
-        return await service.use_yolo8s(user_name, image)
+        return await service.use_yolo8s(user_name, image.file.read())
 
     except IndexError:
         
@@ -64,7 +64,7 @@ async def use_yolo8n(
 
     try:
 
-        return await service.use_yolo8n(user_name, image)
+        return await service.use_yolo8n(user_name, image.file.read())
     
     except IndexError:
 

@@ -1,34 +1,21 @@
 from sqlalchemy import select, update, insert, delete
 
 from database.orm.sqlalchemy.stuff import async_session_maker
-from database.repositories import (
-    
-    AbstractCVModelsRepository, 
-    AbstractTasksRepository,
-    AbstractTaskHistoryRepository
-)
+from database.repositories import SQLAlchemyRepository
 from database.orm.sqlalchemy.models import (
 
     Task,
     CVModelTable,
-    TaskHistory
+    TaskHistory,
+    CVModelEnum
 )
 from .schemas import TaskId, CVModelSchema
 
 
-class CVModelRepository(AbstractCVModelsRepository):
+class CVModelRepository(SQLAlchemyRepository[CVModelTable]):
 
-    model = CVModelTable
-
-    async def add(self, schema: dict):
-
-        async with async_session_maker() as session:
-
-            stmt = insert(self.model).values(schema)
-
-            await session.execute(stmt)
-            await session.commit()
-
+    def __init__(self):
+        super().__init__(CVModelTable)
 
     async def get(self, name: str):
 
@@ -38,28 +25,7 @@ class CVModelRepository(AbstractCVModelsRepository):
 
             result = await session.execute(query)
 
-            model_from_db = result.all()[0].t[0]
-
-            model = CVModelSchema(
-
-                name=model_from_db.name,
-                cost=model_from_db.cost
-            )
-
-            return model
-        
-
-    async def get_id(self, name: str):
-
-        async with async_session_maker() as session:
-
-            query = select(self.model).where(self.model.name == name)
-
-            result = await session.execute(query)
-
-            model_from_db = result.all()[0].t[0]
-
-            return model_from_db.id
+            return result.scalar_one()
         
 
     async def change_cost(self, name: str, new_value: int):
@@ -72,33 +38,47 @@ class CVModelRepository(AbstractCVModelsRepository):
             await session.commit()
 
 
-class TaskRepository(AbstractTasksRepository):
+    async def get_id(self, name: str):
 
-    model = Task
+        async with async_session_maker() as session:
+
+            query = select(self.model).where(self.model.name == name)
+
+            result = await session.execute(query)
+
+            return result.scalar_one().id
+        
+
+    async def fill_table(self):
+
+        async with async_session_maker() as session:
+
+            for i, model in enumerate(CVModelEnum):
+
+                stmt = insert(self.model).values(name=model, cost=i*5)
+
+                await session.execute(stmt)
+            
+            await session.commit()
 
 
+class TaskRepository(SQLAlchemyRepository[Task]):
+
+    def __init__(self):
+        super().__init__(Task)
+    
     async def get(self, id: int):
 
         async with async_session_maker() as session:
         
-            query = select(self.model).where(Task.id == id)
+            query = select(self.model).where(self.model.id == id)
 
             result = await session.execute(query)
 
-            task_from_db = result.all()[0].t[0]
-
-            task = TaskId(
-
-                id=task_from_db.id,
-                cv_model_id=task_from_db.cv_model_id,
-                msg_id=task_from_db.msg_id,
-                result_path=task_from_db.result_path,
-                result_sum=task_from_db.result_sum
-            )
+            task = result.scalar_one()
 
             return task
     
-
 
     async def get_by_msg_id(self, msg_id: str):
 
@@ -132,7 +112,7 @@ class TaskRepository(AbstractTasksRepository):
             await session.commit()
 
 
-    async def get_last(self):
+    async def get_last(self) -> Task:
 
         async with async_session_maker() as session:
 
@@ -140,16 +120,7 @@ class TaskRepository(AbstractTasksRepository):
 
             result = await session.execute(query)
 
-            task_from_db = result.all()[0].t[0]
-
-            task = TaskId(
-
-                id=task_from_db.id,
-                cv_model_id=task_from_db.cv_model_id,
-                msg_id=task_from_db.msg_id,
-                image_id=task_from_db.result_path,
-                result_sum=task_from_db.result_sum
-            )
+            task = result.scalar_one()
 
             return task
     
@@ -184,10 +155,10 @@ class TaskRepository(AbstractTasksRepository):
             await session.commit()
 
 
-class TaskHistoryRepository(AbstractTaskHistoryRepository):
+class TaskHistoryRepository(SQLAlchemyRepository[TaskHistory]):
 
-    model = TaskHistory
-
+    def __init__(self):
+        super().__init__(TaskHistory)
 
     async def get(self, name: str):
 
@@ -219,5 +190,4 @@ class TaskHistoryRepository(AbstractTaskHistoryRepository):
 
 
     async def get_user_history(self, user_name: str):
-
         pass 

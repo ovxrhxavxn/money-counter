@@ -3,8 +3,7 @@ from .repositories import CVModelRepository, TaskRepository
 from users.repositories import UserRepository
 
 
-def get_cv_models_service():
-
+def get_cv_models_service() -> CVModelsService:
     return CVModelsService(
 
         CVModelRepository,
@@ -13,6 +12,5 @@ def get_cv_models_service():
     )
 
 
-def get_tasks_service():
-
+def get_tasks_service() -> TasksService:
     return TasksService(TaskRepository)

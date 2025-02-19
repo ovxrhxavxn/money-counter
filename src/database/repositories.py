@@ -1,144 +1,116 @@
-from abc import ABC, abstractmethod
+from typing import Protocol, Union, Any, TypeVar
+from abc import ABC
 
+from sqlalchemy import select, insert
+
+from .orm.sqlalchemy.stuff import Base, async_session_maker
 from users.schemas import UserDate
 from cv_models.schemas import TaskId, CVModelSchema
 
 
-class AbstractUserRepository(ABC):
-
-    @abstractmethod
-    async def add(self):
-
-        pass
+Model = TypeVar('Model', bound=Base)
 
 
-    @abstractmethod
-    async def get(self, name: str):
+class SQLAlchemyRepository[Model](ABC):
 
-        pass
-    
+    def __init__(self, model: type[Model]):
+        self.model = model
 
-    @abstractmethod
-    async def get_all(self) -> list[UserDate]:
+    async def add(self, schema: dict) -> None:
+        async with async_session_maker() as session:
 
-        pass
-    
+            stmt = insert(self.model).values(schema)
 
-    @abstractmethod
+            await session.execute(stmt)
+            await session.commit()
+
+
+    async def get_all(self) -> list[Model]:
+        async with async_session_maker() as session:
+
+            query = select(self.model)
+
+            result = await session.execute(query)
+
+            return result.all()
+
+
+class AbstractUserRepository(Protocol):
+
+    async def add(self, schema: Union[dict, Any]):
+        ...
+
+    async def get(self, name: str) -> UserDate:
+        ...
+
+    async def get_all(self):
+        ...
+        
     async def subtract_from_token_amount(self, name: str, cost: int):
+        ...
 
-        pass
-
-
-    @abstractmethod
     async def change_token_amount(self, name: str, new_value: int):
+        ...
 
-        pass
-
-
-    @abstractmethod
     async def change_role(self, name: str, new_role: str):
-
-        pass
-
-
-    @abstractmethod
-    async def get_id(self, user_name: str) -> int:
-
-        pass
-    
-
-class AbstractTasksRepository(ABC):
-
-    @abstractmethod
-    async def add(self, schema: dict):
-
-        pass
-
-
-    @abstractmethod
-    async def get(self, id: int) -> TaskId:
-
-        pass
-
-
-    @abstractmethod
-    async def delete(self, id: int):
-
-        pass
-
-
-    @abstractmethod
-    async def get_by_msg_id(self, msg_id: str):
-
-        pass
-    
-
-    @abstractmethod
-    async def update_result(self, msg_id: str, new_result: str):
-
-        pass
-
-
-    @abstractmethod
-    async def get_last(self) -> TaskId:
-
-        pass
-    
-
-    @abstractmethod
-    async def update_msg_id(self, id: int, new_msg_id: str):
-
-        pass
-
-
-    @abstractmethod
-    async def update_result_sum(self, id: int, new_sum: int):
-
-        pass
-
-
-class AbstractCVModelsRepository(ABC):
-
-    @abstractmethod
-    async def add(self):
-
-        pass
-
-
-    @abstractmethod
-    async def get(self, name: str) -> CVModelSchema:
-
-        pass
+        ...
         
-
-    @abstractmethod
     async def get_id(self, name: str) -> int:
-
-        pass
-        
-
-    @abstractmethod
-    async def change_cost(self, name: str, new_value: int):
-
-        pass
+        ...
 
 
-class AbstractTaskHistoryRepository(ABC):
+class AbstractTaskRepository(Protocol):
 
-    @abstractmethod
     async def add(self, schema: dict):
+        ...
 
-        pass
+    async def get(self, id: int) -> TaskId:
+        ...
+
+    async def delete(self, id: int):
+        ...
+
+    async def get_by_msg_id(self, msg_id: str):
+        ...
+    
+    async def update_result(self, msg_id: str, new_result: str):
+        ...
+
+    async def get_last(self) -> TaskId:
+        ...
+    
+    async def update_msg_id(self, id: int, new_msg_id: str):
+        ...
+
+    async def update_result_sum(self, id: int, new_sum: int):
+        ...
 
 
-    @abstractmethod
-    async def get(self, name: str):
+class AbstractCVModelRepository(Protocol):
 
-        pass
+    async def add(self, schema: Union[dict, Any]):
+        ...
+
+    async def get(self, name: str) -> CVModelSchema:
+        ...
+
+    async def get_id(self, name: str) -> int:
+        ...
         
+    async def change_cost(self, name: str, new_value: int):
+        ...
 
-    @abstractmethod
+    async def fill_table(self):
+        ...
+
+
+class AbstractTaskHistoryRepository(Protocol):
+
+    async def add(self, schema: dict):
+        ...
+
+    async def get(self, name: str):
+        ...
+        
     async def get_user_history(self, user_name: str):
-
-        pass
+        ...

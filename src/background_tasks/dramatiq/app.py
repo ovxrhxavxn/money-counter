@@ -1,7 +1,8 @@
 import dramatiq
 from dramatiq.brokers.redis import RedisBroker
+from dramatiq.middleware import AsyncIO
 
+broker = RedisBroker(url='redis://localhost:6379')
+broker.add_middleware(AsyncIO())
 
-redis_broker = RedisBroker(url='redis://localhost:6379')
-
-dramatiq.set_broker(redis_broker)
+dramatiq.set_broker(broker)
