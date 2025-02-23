@@ -1,5 +1,6 @@
 from pathlib import Path
 from PIL import Image
+import base64
 
 import dramatiq
 
@@ -51,11 +52,15 @@ class CVModelsService:
         
         ):
 
-        sum, _, _ = cv_model.use(image)
+        sum, processed_image, _ = cv_model.use(image)
+
+        path = Path(f'images/processed/{task_id}Result.jpeg')
 
         task: TaskId = await self._task_repo.get(task_id)
 
-        await self._task_repo.update_result(task.msg_id, str(Path(f'images/processed/{task_id}Result.jpeg')))
+        Image.open(path).save(processed_image, format='jpeg')
+
+        await self._task_repo.update_result(task.msg_id, str(path))
 
         await self._task_repo.update_result_sum(task_id, sum)
 
@@ -93,20 +98,6 @@ class CVModelsService:
 
             await self._user_repo.get(user_name)
 
-            path = str(Path(f'images/{last_task.id}.jpeg'))
-
-            Image.open(path).save(image)
-
-            ImageSchema(
-
-                path = path
-
-            ).model_dump()
-
-            msg = self._use_cv_model.send(self, cv_model, image, last_task.id, user_name)
-
-            await self._task_repo.update_msg_id(last_task.id, msg.message_id)
-
         except IndexError:
 
             await self._task_repo.delete(last_task.id)
@@ -120,6 +111,20 @@ class CVModelsService:
             raise
         
         else:
+
+            path = str(Path(f'images/{last_task.id}.jpeg'))
+
+            Image.open(path).save(image, format='jpeg')
+
+            ImageSchema(
+
+                path = path
+
+            ).model_dump()
+
+            msg = self._use_cv_model.send(self, cv_model, image, last_task.id, user_name)
+            
+            await self._task_repo.update_msg_id(last_task.id, msg.message_id)
 
             return {'task_id' : msg.message_id}
         
@@ -176,4 +181,12 @@ class TasksService:
         if not task.image_id:
             raise ValueError("Task result is None")
         
-        return task
+        img_bytes = await (Path(task.image_id).resolve())
+
+        encoded_string = base64.b64encode(img_bytes).decode()
+
+        return {
+
+            'image' : encoded_string,
+            'total' : task.result_sum
+        }

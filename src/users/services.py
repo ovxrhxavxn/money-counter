@@ -1,4 +1,4 @@
-from roles.schemas import Role
+from roles.enums import Role
 from database.repositories import AbstractUserRepository
 from .schemas import UserDate, User
 

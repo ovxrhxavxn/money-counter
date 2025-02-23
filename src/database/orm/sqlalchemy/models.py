@@ -7,8 +7,9 @@ from database.orm.sqlalchemy.annotated_types import (
     intpk,
     utcnow
 )
-from roles.schemas import Role
+from roles.enums import Role
 from cv_models.schemas import CVModelEnum
+from images.schemas import path
 
 
 class User(Base):
@@ -57,4 +58,4 @@ class Image(Base):
     __tablename__ = 'images'
 
     id: Mapped[intpk]
-    path: Mapped[str]
+    path: Mapped[path | None]

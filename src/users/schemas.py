@@ -2,7 +2,7 @@ from datetime import date
 
 from pydantic import BaseModel
 
-from roles.schemas import Role
+from roles.enums import Role
 
 
 class User(BaseModel):

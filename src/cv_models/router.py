@@ -1,17 +1,14 @@
-import base64
-from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, UploadFile
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from PIL.Image import Image
 
-from .schemas import CVModelEnum, TaskSchema, CVModelSchema, TaskResult
+from .schemas import CVModelEnum, CVModelSchema, TaskResult
 from .services import CVModelsService, TasksService
 from .dependencies import (
 
-    get_cv_models_service, 
+    get_cv_models_service,
     get_tasks_service
 )
 
@@ -43,7 +40,7 @@ async def use_yolo8s(
 async def use_yolo8m(
     
     user_name: str, 
-    image: UploadFile, 
+    image: UploadFile,
     service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
 
     try:
@@ -81,17 +78,9 @@ async def get_task_result(
 
     try:
 
-        task = await service.check_task_result(task_id)
+        json_response = await service.check_task_result(task_id)
 
-        img_bytes = await (Path(task.image_id).resolve())
-
-        encoded_string = base64.b64encode(img_bytes).decode()
-
-        return JSONResponse(content={
-
-            'image' : encoded_string,
-            'total' : task.result_sum
-        })
+        return JSONResponse(content=json_response)
     
     except ValueError:
 
