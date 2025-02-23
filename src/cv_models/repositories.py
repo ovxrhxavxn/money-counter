@@ -47,19 +47,6 @@ class CVModelRepository(SQLAlchemyRepository[CVModelTable]):
             result = await session.execute(query)
 
             return result.scalar_one().id
-        
-
-    async def fill_table(self):
-
-        async with async_session_maker() as session:
-
-            for i, model in enumerate(CVModelEnum):
-
-                stmt = insert(self.model).values(name=model, cost=i*5)
-
-                await session.execute(stmt)
-            
-            await session.commit()
 
 
 class TaskRepository(SQLAlchemyRepository[Task]):
@@ -149,7 +136,7 @@ class TaskRepository(SQLAlchemyRepository[Task]):
 
         async with async_session_maker() as session:
 
-            stmt = delete(self.model)
+            stmt = delete(self.model).where(self.model.id == id)
 
             await session.execute(stmt)
             await session.commit()
