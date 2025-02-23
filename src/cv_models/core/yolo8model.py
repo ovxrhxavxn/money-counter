@@ -241,18 +241,16 @@ class YOLO8Model(ABC):
         # //
 
         cls.nums_of_processed_images += 1
-
-        image.save(Path(f'database/images/processed/{cls.nums_of_processed_images}Result.jpeg'))
         # //
         img_byte_main = io.BytesIO()            
-        image.save(img_byte_main, format="JPEG")
+        
         img_byte_main = img_byte_main.getvalue()
 
         return sum, img_byte_main, img_byte_array
 
 
     @staticmethod
-    def _Yolo8M_Work(cls, img: bytes):
+    def _Yolo8M_Work(img: bytes):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 1)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
@@ -260,7 +258,7 @@ class YOLO8Model(ABC):
 
 
     @staticmethod
-    def _Yolo8N_Work(cls, img: bytes):
+    def _Yolo8N_Work(img: bytes):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 2)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
@@ -268,7 +266,7 @@ class YOLO8Model(ABC):
 
 
     @staticmethod
-    def _Yolo8S_Work(cls, img: bytes):
+    def _Yolo8S_Work(img: bytes):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 3)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
@@ -281,10 +279,8 @@ class YOLO8N(YOLO8Model):
 
     def __init__(self) -> None:
         super().__init__()
-        
 
     def use(self, image: bytes):
-
         return self._Yolo8N_Work(image)
 
 
@@ -294,10 +290,8 @@ class YOLO8S(YOLO8Model):
 
     def __init__(self) -> None:
         super().__init__()
-        
 
     def use(self, image: bytes):
-
         return self._Yolo8S_Work(image)
 
 
@@ -307,8 +301,6 @@ class YOLO8M(YOLO8Model):
 
     def __init__(self) -> None:
         super().__init__()
-        
 
     def use(self, image: bytes):
-
         return self._Yolo8M_Work(image)
