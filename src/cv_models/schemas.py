@@ -1,13 +1,6 @@
-from enum import StrEnum
-
 from pydantic import BaseModel
 
-
-class CVModelEnum(StrEnum):
-
-    YOLO8N = 'yolo8n',
-    YOLO8S = 'yolo8s',
-    YOLO8M = 'yolo8m'
+from .enums import CVModelEnum
 
 
 class CVModelSchema(BaseModel):
@@ -20,7 +13,7 @@ class TaskSchema(BaseModel):
 
     cv_model_id: int
     msg_id: str | None
-    result_path: int | None
+    image_id: int | None
     result_sum: float | None
 
 
