@@ -15,6 +15,7 @@ ultralytics = "^8.3.74"
 onnxruntime = "^1.20.1"
 aiosqlite3 = "^0.3.0"
 aiosqlite = "^0.21.0"
+redis = "^5.2.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
