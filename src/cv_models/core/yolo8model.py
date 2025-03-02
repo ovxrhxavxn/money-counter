@@ -1,4 +1,5 @@
 import io
+from typing import TypeAlias
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -13,6 +14,11 @@ import numpy as np
 from ultralytics import YOLO
 
 from ..schemas import CVModelEnum
+
+
+Sum: TypeAlias = int
+MainImageBytes: TypeAlias = bytes
+ImageChunksBytes: TypeAlias = list[bytes]
 
 
 class YOLO8Model(ABC):
@@ -116,7 +122,7 @@ class YOLO8Model(ABC):
     }
 
     @abstractmethod
-    def use(self, image: bytes) -> tuple[int, bytes, list]:
+    def use(self, image: bytes) -> tuple[Sum, MainImageBytes, ImageChunksBytes]:
         ...
         
 
