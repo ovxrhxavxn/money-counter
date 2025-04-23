@@ -21,6 +21,9 @@ class TaskId(TaskSchema):
 
     id: int | None
 
+    class Config:
+        from_attributes = True
+
 
 class TaskHistorySchema(BaseModel):
 

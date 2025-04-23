@@ -1,4 +1,5 @@
 import io
+from collections import namedtuple
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -15,9 +16,12 @@ from ultralytics import YOLO
 from ..schemas import CVModelEnum
 
 
+ModelResult = namedtuple('ModelResult', ['message_sum', 'img_byte_main', 'img_byte_array'])
+
+
 class YOLO8Model(ABC):
 
-    name: CVModelEnum = None
+    name: str = None
 
     nums_of_processed_images = 0
 
@@ -116,7 +120,7 @@ class YOLO8Model(ABC):
     }
 
     @abstractmethod
-    def use(self, image: bytes) -> tuple[int, bytes, list]:
+    def use(self, image: bytes) -> ModelResult:
         ...
         
 
@@ -254,7 +258,7 @@ class YOLO8Model(ABC):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 1)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
-        return message_sum, img_byte_main, img_byte_array
+        return ModelResult(message_sum, img_byte_main, img_byte_array)
 
 
     @staticmethod
@@ -262,7 +266,7 @@ class YOLO8Model(ABC):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 2)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
-        return message_sum, img_byte_main, img_byte_array
+        return ModelResult(message_sum, img_byte_main, img_byte_array)
 
 
     @staticmethod
@@ -270,7 +274,7 @@ class YOLO8Model(ABC):
         coordinates_list = YOLO8Model.__detect_objects_on_image(img, 3)
         message_sum, img_byte_main, img_byte_array = YOLO8Model.__work_with_items(img, coordinates_list)
 
-        return message_sum, img_byte_main, img_byte_array
+        return ModelResult(message_sum, img_byte_main, img_byte_array)
     
 
 class YOLO8N(YOLO8Model):

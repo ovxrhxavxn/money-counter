@@ -8,12 +8,14 @@ from fastapi import (
 from users.router import router as users_router
 from cv_models.router import router as cv_models_router
 from database.orm.sqlalchemy.stuff import create_tables
+from cv_models.dependencies import get_cv_models_service
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
     await create_tables()
+    # await get_cv_models_service().fill_table_once()
 
     yield
 

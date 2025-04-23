@@ -1,4 +1,4 @@
-from sqlalchemy import select, update, insert
+from sqlalchemy import select, update
 
 from database.orm.sqlalchemy.stuff import async_session_maker
 from database.orm.sqlalchemy.models import User

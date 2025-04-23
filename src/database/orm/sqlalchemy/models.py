@@ -8,8 +8,6 @@ from database.orm.sqlalchemy.annotated_types import (
     utcnow
 )
 from roles.enums import Role
-from cv_models.schemas import CVModelEnum
-from images.schemas import path
 
 
 class User(Base):
@@ -28,7 +26,7 @@ class CVModelTable(Base):
     __tablename__ = 'cv_models'
 
     id: Mapped[intpk]
-    name: Mapped[CVModelEnum] = mapped_column(unique=True)
+    name: Mapped[str] = mapped_column(unique=True)
     cost: Mapped[int]
 
 
@@ -47,10 +45,10 @@ class Task(Base):
     __tablename__ = 'tasks'
     
     id: Mapped[intpk]
-    cv_model_id: Mapped[int] = mapped_column(ForeignKey('cv_models.id'))
-    msg_id: Mapped[int] = mapped_column(unique=True)
-    image_id: Mapped[int] = mapped_column(ForeignKey('images.id'))
-    result_sum: Mapped[float | None]
+    cv_model_id: Mapped[int] = mapped_column(ForeignKey('cv_models.id'), nullable=True)
+    msg_id: Mapped[int] = mapped_column(unique=True, nullable=True)
+    image_id: Mapped[int] = mapped_column(ForeignKey('images.id'), nullable=True)
+    result_sum: Mapped[float] = mapped_column(nullable=True)
 
 
 class Image(Base):
@@ -58,4 +56,4 @@ class Image(Base):
     __tablename__ = 'images'
 
     id: Mapped[intpk]
-    path: Mapped[path | None]
+    path: Mapped[str] = mapped_column(nullable=True)

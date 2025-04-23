@@ -6,7 +6,7 @@ from sqlalchemy import select, insert
 from .orm.sqlalchemy.stuff import Base, async_session_maker
 from users.schemas import UserDate
 from cv_models.schemas import TaskId, CVModelSchema, TaskHistorySchema
-from images.schemas import path, ImageSchema
+from images.schemas import ImageSchema
 
 
 Model = TypeVar('Model', bound=Base)
@@ -74,7 +74,7 @@ class AbstractTaskRepository(Protocol):
     async def delete(self, id: int):
         ...
 
-    async def get_by_msg_id(self, msg_id: str):
+    async def get_by_msg_id(self, msg_id: str) -> TaskId:
         ...
     
     async def update_result(self, msg_id: str, new_result: str):
@@ -107,6 +107,9 @@ class AbstractCVModelRepository(Protocol):
     async def change_cost(self, name: str, new_value: int):
         ...
 
+    async def fill_table(self):
+        ...
+
 
 class AbstractTaskHistoryRepository(Protocol):
 
@@ -131,5 +134,5 @@ class AbstractImageRepository(Protocol):
     async def get_all(self) -> list[ImageSchema]:
         ...
 
-    async def get(self, path: path) -> ImageSchema:
+    async def get(self, path: str) -> ImageSchema:
         ...

@@ -8,7 +8,7 @@ path: TypeAlias = str
 
 class ImageSchema(BaseModel):
 
-    path: Annotated[path, 'Correct str path to an image']
+    path: Annotated[path, 'A correct path to an image']
 
 
 class ImageFromDB(ImageSchema):

@@ -5,7 +5,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 
 from .schemas import User, UserDate
-from .services import UserService
+from .services import UsersService
 from .dependencies import get_user_service
 
 
@@ -20,7 +20,7 @@ router = APIRouter(
 async def add_user(
     
     user: User,
-    service: Annotated[UserService, Depends(get_user_service)]
+    service: Annotated[UsersService, Depends(get_user_service)]
     
     ):
 
@@ -37,7 +37,7 @@ async def add_user(
 async def get_user(
     
     user_name: str,
-    service: Annotated[UserService, Depends(get_user_service)]
+    service: Annotated[UsersService, Depends(get_user_service)]
 
     ):
 
@@ -45,13 +45,12 @@ async def get_user(
 
         return await service.get_by_name(user_name)
 
-    except IndexError:
-
-        raise HTTPException(404, detail='The user doesn`t exist')
+    except HTTPException:
+        raise
     
 
 @router.get('/', response_model=list[UserDate])
-async def get_all_users(service: Annotated[UserService, Depends(get_user_service)]):
+async def get_all_users(service: Annotated[UsersService, Depends(get_user_service)]):
 
     return await service.get_all()
     
@@ -60,12 +59,12 @@ async def get_all_users(service: Annotated[UserService, Depends(get_user_service
 async def change_user_token_amount(
     
     user_name: str, 
-    token_amount: int,
-    service: Annotated[UserService, Depends(get_user_service)]
+    amount: int,
+    service: Annotated[UsersService, Depends(get_user_service)]
     
     ):
 
-    await service.change_token_amount(user_name, token_amount)
+    await service.change_token_amount(user_name, amount)
 
 
 @router.patch('/{user_name}/role')
@@ -73,7 +72,7 @@ async def change_user_role(
     
     user_name: str, 
     new_role: str,
-    service: Annotated[UserService, Depends(get_user_service)]
+    service: Annotated[UsersService, Depends(get_user_service)]
     
     ):
 

@@ -6,10 +6,10 @@ from database.orm.sqlalchemy.models import (
 
     Task,
     CVModelTable,
-    TaskHistory,
-    CVModelEnum
+    TaskHistory
 )
-from .schemas import TaskId, CVModelSchema
+from .schemas import CVModelSchema
+from .enums import CVModelEnum
 
 
 class CVModelRepository(SQLAlchemyRepository[CVModelTable]):
@@ -47,6 +47,15 @@ class CVModelRepository(SQLAlchemyRepository[CVModelTable]):
             result = await session.execute(query)
 
             return result.scalar_one().id
+        
+
+    async def fill_table(self):
+
+        async with async_session_maker() as session:
+
+            for i, model in enumerate(CVModelEnum):
+                await session.execute(insert(self.model).values(CVModelSchema(name=model, cost=(i+1)*5).model_dump()))
+                await session.commit()
 
 
 class TaskRepository(SQLAlchemyRepository[Task]):
@@ -75,16 +84,7 @@ class TaskRepository(SQLAlchemyRepository[Task]):
 
             result = await session.execute(query)
 
-            task_from_db = result.all()[0].t[0]
-
-            task = TaskId(
-
-                id=task_from_db.id,
-                cv_model_id=task_from_db.cv_model_id,
-                msg_id=task_from_db.msg_id,
-                image_id=task_from_db.result_path,
-                result_sum=task_from_db.result_sum
-            )
+            task = result.scalar_one()
 
             return task
     
@@ -155,13 +155,7 @@ class TaskHistoryRepository(SQLAlchemyRepository[TaskHistory]):
 
             result = await session.execute(query)
 
-            model_from_db = result.all()[0].t[0]
-
-            model = CVModelSchema(
-
-                name=model_from_db.name,
-                cost=model_from_db.cost
-            )
+            model = result.scalar_one()
 
             return model
         

@@ -6,8 +6,10 @@ from fastapi.responses import JSONResponse
 
 from .schemas import CVModelEnum, CVModelSchema, TaskResult
 from .services import CVModelsService, TasksService
+from .use_cases import UseCVModelUseCase
 from .dependencies import (
 
+    get_cv_models_use_case,
     get_cv_models_service,
     get_tasks_service
 )
@@ -25,15 +27,14 @@ async def use_yolo8s(
 
     user_name: str, 
     image: UploadFile, 
-    service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
+    use_case: Annotated[UseCVModelUseCase, Depends(get_cv_models_use_case)]):
 
     try:
 
-        return await service.use_yolo8s(user_name, image.file.read())
+        return await use_case.use_yolo8s(user_name, image.file.read())
 
-    except IndexError:
-        
-        raise HTTPException(404, detail='The user doesn`t exist')
+    except HTTPException:
+        raise
     
 
 @router.post(f'/models/{CVModelEnum.YOLO8M}', status_code=202)
@@ -41,15 +42,14 @@ async def use_yolo8m(
     
     user_name: str, 
     image: UploadFile,
-    service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
+    use_case: Annotated[UseCVModelUseCase, Depends(get_cv_models_use_case)]):
 
     try:
 
-        return await service.use_yolo8s(user_name, image.file.read())
+        return await use_case.use_yolo8s(user_name, image.file.read())
 
-    except IndexError:
-        
-        raise HTTPException(404, detail='The user doesn`t exist')
+    except HTTPException:
+        raise
 
 
 @router.post(f'/models/{CVModelEnum.YOLO8N}', status_code=202)
@@ -57,15 +57,14 @@ async def use_yolo8n(
     
     user_name: str, 
     image: UploadFile, 
-    service: Annotated[CVModelsService, Depends(get_cv_models_service)]):
+    use_case: Annotated[UseCVModelUseCase, Depends(get_cv_models_use_case)]):
 
     try:
 
-        return await service.use_yolo8n(user_name, image.file.read())
+        return await use_case.use_yolo8n(user_name, image.file.read())
     
-    except IndexError:
-
-        raise HTTPException(404, detail='The user doesn`t exist')
+    except HTTPException:
+        raise
 
 
 @router.get('/models/tasks/{task_id}', response_model=TaskResult)
@@ -82,9 +81,8 @@ async def get_task_result(
 
         return JSONResponse(content=json_response)
     
-    except ValueError:
-
-        raise HTTPException(202, detail="The task is in processing")
+    except HTTPException:
+        raise
 
 
 @router.get('/models/{model_name}', response_model=CVModelSchema)
@@ -99,9 +97,8 @@ async def get_model(
 
         return await service.get(model_name)
     
-    except IndexError:
-
-        raise HTTPException(404, detail='The model doesn`t exist')
+    except HTTPException:
+        raise 
     
 
 @router.patch('/models/{model_name}/cost')
