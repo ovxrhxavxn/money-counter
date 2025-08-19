@@ -1,0 +1,8 @@
+[project]
+name = "money_counter_protos"
+version = "0.1.0"
+description = "Shared protobuf files for my money counter project"
+requires-python = ">=3.12"
+dependencies = [
+    "grpcio>=1.74.0",
+]

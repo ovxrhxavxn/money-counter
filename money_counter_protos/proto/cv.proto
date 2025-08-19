@@ -1,0 +1,26 @@
+// cv.proto
+
+syntax = "proto3";
+
+package cv;
+
+// Add an enum for the model types
+enum ModelType {
+  YOLO8N = 0;
+  YOLO8S = 1;
+  YOLO8M = 2;
+}
+
+service ComputerVision {
+  rpc ProcessImage(ImageRequest) returns (ProcessResponse);
+}
+
+message ImageRequest {
+  // Add the model type to the request
+  ModelType model_type = 1;
+  bytes image_data = 2;
+}
+
+message ProcessResponse {
+  bytes image_data = 1;
+}
